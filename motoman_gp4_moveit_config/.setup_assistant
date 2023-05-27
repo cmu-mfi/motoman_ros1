@@ -1,0 +1,8 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: motoman_gp4_support
+    relative_path: urdf/gp4.urdf
+  SRDF:
+    relative_path: config/motoman_gp4.srdf
+  CONFIG:
+    generated_timestamp: 1390724199

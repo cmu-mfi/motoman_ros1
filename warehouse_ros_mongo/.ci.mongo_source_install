@@ -1,0 +1,8 @@
+#!/bin/bash
+# Install mongo C++ client lib from source
+pushd $HOME
+git clone -b 26compat https://github.com/mongodb/mongo-cxx-driver.git
+pushd mongo-cxx-driver
+scons --prefix=/usr/local/ --full --use-system-boost --disable-warnings-as-errors
+popd
+popd
