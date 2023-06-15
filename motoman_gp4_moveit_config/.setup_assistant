@@ -1,8 +1,11 @@
 moveit_setup_assistant_config:
   URDF:
     package: motoman_gp4_support
-    relative_path: urdf/gp4.urdf
+    relative_path: urdf/gp4.xacro
+    xacro_args: ""
   SRDF:
     relative_path: config/motoman_gp4.srdf
   CONFIG:
-    generated_timestamp: 1390724199
+    author_name: Shobhit
+    author_email: shobhit@cmu.edu
+    generated_timestamp: 1686864330
