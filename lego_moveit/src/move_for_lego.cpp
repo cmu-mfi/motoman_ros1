@@ -84,8 +84,6 @@ int main(int argc, char* argv[])
 
 	MoveForLego gp4(nh);
 
-	gp4.test_func();
-
 	ROS_INFO("MoveForLego node started");
 
 	//ros::spin();
