@@ -42,14 +42,11 @@ public:
 	  move_group.move();
 	  last_pose_ = move_group.getCurrentPose();
 
+	  ROS_INFO_STREAM(last_pose_);
+	  
 	  res.pose = last_pose_.pose;
 	  async_spinner.stop();
 	  return true; //usual practice to return false if invalid/erroneous response
-  }
-
-  void test_func()
-  {
-	  ROS_INFO_STREAM(move_group.getCurrentPose());
   }
 
   bool getPoseInfo(lego_moveit::GetPose::Request& req,
