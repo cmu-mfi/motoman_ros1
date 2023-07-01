@@ -16,6 +16,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <run_depend>industrial_robot_simulator</run_depend>
+  <run_depend>motoman_gp4_support</run_depend>
   <run_depend>moveit_ros_move_group</run_depend>
   <run_depend>moveit_fake_controller_manager</run_depend>
   <run_depend>moveit_kinematics</run_depend>
