@@ -4,6 +4,17 @@
 
 - **mongo c++ drivers**
   - Follow instructions from https://github.com/ros-planning/warehouse_ros_mongo
+  - ```
+    First get the driver:
+
+git clone -b 26compat https://github.com/mongodb/mongo-cxx-driver.git
+
+Then compile using scons:
+
+sudo apt-get install scons
+cd mongo-cxx-driver
+sudo scons --prefix=/usr/local/ --full --use-system-boost --disable-warnings-as-errors
+```
   - You might have to change python3 to python2 to use scons
     - edit line 1 of scons. use `which scons` to locate it
 - **eigenpy**
