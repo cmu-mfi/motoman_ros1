@@ -21,7 +21,7 @@ int main(int argc, char **argv)
  	ros::NodeHandle private_node_handle("~");
 
   	std::string base_frame;
-  	private_node_handle.param<std::string>("base_frame", base_frame, "world"); // parameter name, string object reference, default value
+  	private_node_handle.param<std::string>("base_frame", base_frame, "base_link"); // parameter name, string object reference, default value
 
     
 
@@ -41,7 +41,7 @@ void get_pose_client(ros::NodeHandle nh)
 
   	ROS_INFO("sample node has been initialized");
 
-  	srv.request.frame = "world";
+  	srv.request.frame = "base_link";
 	
 	if(client.call(srv))
   	{
@@ -64,7 +64,7 @@ void make_a_move_client(ros::NodeHandle nh)
 	lego_moveit::MakeMove srv;
 
 	srv.request.pose = requestPose;
-	srv.request.base_frame = "world";
+	srv.request.base_frame = "base_link";
 	if(client.call(srv))
 	{
 		ROS_INFO_STREAM("Pose: "<<srv.response.pose);
