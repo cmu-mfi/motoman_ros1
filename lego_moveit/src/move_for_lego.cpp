@@ -4,6 +4,7 @@
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
 #include <moveit/move_group_interface/move_group_interface.h>
+#include <string.h>
 
 class MoveForLego
 {
@@ -12,19 +13,20 @@ private:
   ros::ServiceServer state_server_;
   tf::TransformListener listener_;
   geometry_msgs::PoseStamped last_pose_;
-  moveit::planning_interface::MoveGroupInterface move_group;
+  ros::NodeHandle nh_;
+  moveit::planning_interface::MoveGroupInterface move_group_;
 
 public:
-  MoveForLego(ros::NodeHandle& nh)
-	  : move_group("manipulator")
+  MoveForLego(std::string group_name, ros::NodeHandle& nh_)
+	  : move_group_(group_name)
   {
-      ROS_INFO_STREAM("planning frame.."<<move_group.getPlanningFrame());
-      ROS_INFO_STREAM("End Effector.."<<move_group.getEndEffector());
-      ROS_INFO_STREAM("End Effector Link.."<<move_group.getEndEffectorLink());
+      ROS_INFO_STREAM("planning frame.."<<move_group_.getPlanningFrame());
+      ROS_INFO_STREAM("End Effector.."<<move_group_.getEndEffector());
+      ROS_INFO_STREAM("End Effector Link.."<<move_group_.getEndEffectorLink());
 
       //SERVICE SERVERS
-      move_server_ = nh.advertiseService("make_a_move", &MoveForLego::letsMove, this);
-      state_server_= nh.advertiseService("get_pose", &MoveForLego::getPoseInfo, this);
+      move_server_ = nh_.advertiseService("make_a_move", &MoveForLego::letsMove, this);
+      state_server_= nh_.advertiseService("get_pose", &MoveForLego::getPoseInfo, this);
 
       //move_group.>setPlannerId("manipulator");
   }
@@ -37,10 +39,10 @@ public:
 	  
 	  ROS_INFO_STREAM("Let's Move!!");
 	  //moveit::planning_interface::MoveGroupInterface move_group."manipulator"); //move_group name to be changes
-	  move_group.setPoseReferenceFrame(req.base_frame);
-	  move_group.setPoseTarget(req.pose); 
-	  move_group.move();
-	  last_pose_ = move_group.getCurrentPose();
+	  move_group_.setPoseReferenceFrame(req.base_frame);
+	  move_group_.setPoseTarget(req.pose); 
+	  move_group_.move();
+	  last_pose_ = move_group_.getCurrentPose();
 
 	  ROS_INFO_STREAM(last_pose_);
 	  
@@ -56,7 +58,7 @@ public:
 	  async_spinner.start();
 	  ROS_INFO("getPoseInfo");
 
-	  last_pose_ = move_group.getCurrentPose();
+	  last_pose_ = move_group_.getCurrentPose();
 	  ROS_INFO_STREAM(last_pose_);
 
 	  res.pose = last_pose_.pose;
@@ -79,7 +81,10 @@ int main(int argc, char* argv[])
 	ROS_INFO("MoveForLego node starting");
 	ros::NodeHandle nh;
 
-	MoveForLego gp4(nh);
+	std::string group_name;
+	ros::param::param<std::string>("/group_name", group_name, "manipulator");
+
+	MoveForLego gp4(group_name, nh);
 
 	ROS_INFO("MoveForLego node started");
 
