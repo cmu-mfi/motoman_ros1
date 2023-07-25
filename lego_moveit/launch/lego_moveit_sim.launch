@@ -1,0 +1,22 @@
+<launch>
+
+<arg name="namespace" default=""/>
+
+<group ns="$(arg namespace)">
+	
+	<rosparam file="$(dirname)/../config/controllers_A.yaml" />
+	<!-- Launch moveit_planning_execution.launch from motoman_gp4_moveit_config package under the 'architect' namespace -->
+    	<include file="$(find motoman_gp4_moveit_config)/launch/moveit_planning_execution.launch">
+		<arg name="sim" value="true" />
+		<arg name="default_action_ns" value="false" />
+    	</include>
+
+	<!-- Start move_for_lego node -->
+    	<node name="move_for_lego" pkg="lego_moveit" type="move_for_lego" output="screen">
+		<param name="group_name" type="str" value="manipulator" />
+  	</node>
+	
+	<node name="random_motion" pkg="lego_moveit" type="random_motion" output="screen" />
+
+</group>
+</launch>

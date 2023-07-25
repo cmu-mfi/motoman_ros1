@@ -147,6 +147,8 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(move_for_lego src/move_for_lego.cpp)
 add_executable(service_sample_node src/service_sample_node.cpp)
+add_executable(random_motion src/service_lc_node.cpp)
+
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -158,6 +160,7 @@ add_executable(service_sample_node src/service_sample_node.cpp)
 ## same as for the library above
 add_dependencies(service_sample_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(move_for_lego ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(random_motion ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(move_for_lego
@@ -167,6 +170,9 @@ target_link_libraries(service_sample_node
   ${catkin_LIBRARIES}
 )
 
+target_link_libraries(random_motion
+  ${catkin_LIBRARIES}
+)
 #############
 ## Install ##
 #############

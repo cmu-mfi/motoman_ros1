@@ -73,7 +73,7 @@ public:
 
 int main(int argc, char* argv[])
 {
-	ros::init(argc, argv, "MoveForLego");
+	ros::init(argc, argv, "move_for_lego");
 
 	ros::AsyncSpinner async_spinner(1);
 	async_spinner.start();

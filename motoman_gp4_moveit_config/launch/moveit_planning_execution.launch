@@ -8,15 +8,16 @@
        - Update with joint names for your robot (in order expected by rbt controller)
        - and uncomment the following line: -->
   <rosparam command="load" file="$(find motoman_gp4_support)/config/joint_names_gp4.yaml"/>
- 
+
+  <!-- <rosparam ns="move_group" file="$(find motoman_gp4_moveit_config)/config/controllers.yaml" /> -->
   <!-- the "sim" argument controls whether we connect to a Simulated or Real robot -->
   <!--  - if sim=false, a robot_ip argument is required -->
   <arg name="sim" default="true" />
   <arg name="robot_ip" unless="$(arg sim)" />
   <arg name="controller" default="yrc1000" unless="$(arg sim)" />
+  <arg name="default_action_ns" default="true"/>
 
- 
-  <!-- load the robot_description parameter before launching ROS-I nodes -->
+ <!-- load the robot_description parameter before launching ROS-I nodes -->
   <include file="$(find motoman_gp4_moveit_config)/launch/planning_context.launch" >
     <arg name="load_robot_description" value="true" />
   </include>
@@ -34,8 +35,12 @@
       <arg name="robot_ip" value="$(arg robot_ip)"/>
       <arg name="controller" value="$(arg controller)"/>
     </include>
+    <group if="$(arg default_action_ns)">
+	    <rosparam command="load" ns="move_group" file="$(find motoman_gp4_moveit_config)/config/controllers.yaml" />
+    </group>
   </group>
 
+  
   <!-- publish the robot state (tf transforms) -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
