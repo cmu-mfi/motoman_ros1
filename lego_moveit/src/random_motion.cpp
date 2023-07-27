@@ -33,8 +33,13 @@ void random_motion(ros::NodeHandle& nh)
        {
 	       random_pose = move_group.getRandomPose();
 
+	       ROS_INFO_STREAM("generated pose: "<<random_pose);
+
 	       //checking if valid pose
-	       if(random_pose.pose.position.z > 0.0)
+	       if(
+		random_pose.pose.position.z > 0.45 &&
+		random_pose.pose.position.x < 0.29
+		)
 	       {
 		       move_group.setStartStateToCurrentState();
 		       move_group.setPoseTarget(random_pose);
@@ -44,7 +49,7 @@ void random_motion(ros::NodeHandle& nh)
 		       if(success)
 			       move_here(nh, random_pose.pose);
 	       }
-	       ros::Duration(0.01).sleep();
+	       ros::Duration(1).sleep();
        }
 }
 
@@ -55,8 +60,12 @@ void move_here(ros::NodeHandle& nh, geometry_msgs::Pose requestPose)
 
 	srv.request.pose = requestPose;
 	srv.request.base_frame = "base_link";
+
+        ROS_INFO_STREAM("Requested pose: "<<srv.request.pose);
+
+
 	if(client.call(srv))
 	{
-		ROS_INFO_STREAM("Pose: "<<srv.response.pose);
+		ROS_INFO_STREAM("Final pose: "<<srv.response.pose);
   	}
 }
