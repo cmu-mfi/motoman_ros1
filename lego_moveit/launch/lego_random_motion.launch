@@ -1,0 +1,9 @@
+<launch>
+	<arg name="namespace" default="sim" />
+	<group ns="$(arg namespace)">
+
+		<!-- Start random motion node -->
+		<node name="random_motion" pkg="lego_moveit" type="random_motion" output="screen" />
+
+	</group>
+</launch>

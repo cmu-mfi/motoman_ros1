@@ -1,10 +1,12 @@
 <launch>
 <group ns="creator">
+
+	<param name="tf_prefix" value="creator"/>
 	
-	<rosparam file="$(dirname)/../config/controllers_C.yaml" />
-	<!-- Launch moveit_planning_execution.launch from motoman_gp4_moveit_config package under the 'architect' namespace -->
+	<rosparam command="load" ns="move_group" file="$(dirname)/../config/controllers_C.yaml" />
+	<!-- Launch moveit_planning_execution.launch from motoman_gp4_moveit_config package under the 'creator' namespace -->
     	<include file="$(find motoman_gp4_moveit_config)/launch/moveit_planning_execution.launch">
-		<arg name="robot_ip" value="192.168.1.6" />
+		<arg name="robot_ip" value="192.168.1.73" />
 		<arg name="sim" value="false" />
 		<arg name="default_action_ns" value="false" />
     	</include>

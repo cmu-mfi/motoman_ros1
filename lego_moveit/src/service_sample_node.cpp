@@ -23,8 +23,6 @@ int main(int argc, char **argv)
   	std::string base_frame;
   	private_node_handle.param<std::string>("base_frame", base_frame, "base_link"); // parameter name, string object reference, default value
 
-    
-
 	ROS_INFO("sample node has been initialized");
 
 	get_pose_client(nh);

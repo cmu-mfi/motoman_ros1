@@ -147,7 +147,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(move_for_lego src/move_for_lego.cpp)
 add_executable(service_sample_node src/service_sample_node.cpp)
-add_executable(random_motion src/service_lc_node.cpp)
+add_executable(random_motion src/random_motion.cpp)
 
 
 ## Rename C++ executable without prefix

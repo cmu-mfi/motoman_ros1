@@ -1,10 +1,12 @@
 <launch>
 <group ns="builder">
+
+	<param name="tf_prefix" value="builder"/>
 	
-	<rosparam file="$(dirname)/../config/controllers_B.yaml" />
+	<rosparam command="load" ns="move_group" file="$(dirname)/../config/controllers_B.yaml" />
 	<!-- Launch moveit_planning_execution.launch from motoman_gp4_moveit_config package under the 'architect' namespace -->
     	<include file="$(find motoman_gp4_moveit_config)/launch/moveit_planning_execution.launch">
-		<arg name="robot_ip" value="192.168.1.6" />
+		<arg name="robot_ip" value="192.168.1.72" />
 		<arg name="sim" value="false" />
 		<arg name="default_action_ns" value="false" />
     	</include>
@@ -14,5 +16,10 @@
 		<param name="group_name" type="str" value="manipulator" />
   	</node>
 
+	<!--
+	<node name="enable_robot" pkg="lego_moveit" type="rosservice_enable.py" output="screen">
+		<param name="namespace" type="str" value="builder" />
+	</node>
+	-->
 </group>
 </launch>
