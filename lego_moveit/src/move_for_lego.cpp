@@ -41,7 +41,14 @@ public:
 	  //moveit::planning_interface::MoveGroupInterface move_group."manipulator"); //move_group name to be changes
 	  move_group_.setPoseReferenceFrame(req.base_frame);
 	  move_group_.setPoseTarget(req.pose); 
-	  move_group_.move();
+	  auto ret_val = move_group_.move();
+
+	  while(ret_val == -6)
+          {
+              ret_val = move_group_.move();
+	      ROS_INFO_STREAM("Timed out! Retrying..");
+	  }
+
 	  last_pose_ = move_group_.getCurrentPose();
 
 	  ROS_INFO_STREAM(last_pose_);
