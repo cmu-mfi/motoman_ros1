@@ -17,6 +17,10 @@
   <arg name="controller" default="yrc1000" unless="$(arg sim)" />
   <arg name="default_action_ns" default="true"/>
 
+    <group if="$(arg default_action_ns)">
+	    <rosparam command="load" ns="move_group" file="$(find motoman_gp4_moveit_config)/config/controllers.yaml" />
+    </group>
+
  <!-- load the robot_description parameter before launching ROS-I nodes -->
   <include file="$(find motoman_gp4_moveit_config)/launch/planning_context.launch" >
     <arg name="load_robot_description" value="true" />
@@ -35,9 +39,6 @@
       <arg name="robot_ip" value="$(arg robot_ip)"/>
       <arg name="controller" value="$(arg controller)"/>
     </include>
-    <group if="$(arg default_action_ns)">
-	    <rosparam command="load" ns="move_group" file="$(find motoman_gp4_moveit_config)/config/controllers.yaml" />
-    </group>
   </group>
 
   
