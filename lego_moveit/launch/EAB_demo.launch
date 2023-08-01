@@ -1,0 +1,17 @@
+<launch>
+
+	<!-- start robot B and launch random motion task on it -->
+    <include file="$(find lego_moveit)/launch/lego_random_motion.launch">
+        <arg name="namespace" value="builder" />
+        <arg name="config_fname" value="$(find lego_moveit)/config/random_motion_s2.json" />
+        <arg name="point_count" value="4" />
+    </include>
+    
+	<!-- start robot C and launch random motion task on it -->
+    <include file="$(find lego_moveit)/launch/lego_random_motion.launch">
+        <arg name="namespace" value="creator" />
+        <arg name="config_fname" value="$(find lego_moveit)/config/random_motion_s1.json" />
+        <arg name="point_count" value="4" />
+    </include>
+
+</launch>
