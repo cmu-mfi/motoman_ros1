@@ -17,7 +17,7 @@
 	</node>
 
 	<node name="enable_robot" pkg="lego_moveit" type="rosservice_enable.py" output="screen">
-		<param name="namespace" type="str" value="builder" />
+		<param name="namespace" type="str" value="developer" />
 	</node>
 </group>
 </launch>

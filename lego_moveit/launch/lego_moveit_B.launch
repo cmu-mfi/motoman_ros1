@@ -16,10 +16,8 @@
 		<param name="group_name" type="str" value="manipulator" />
   	</node>
 
-	<!--
 	<node name="enable_robot" pkg="lego_moveit" type="rosservice_enable.py" output="screen">
 		<param name="namespace" type="str" value="builder" />
 	</node>
-	-->
 </group>
 </launch>
