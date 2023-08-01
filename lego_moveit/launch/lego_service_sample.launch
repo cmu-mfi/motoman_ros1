@@ -4,6 +4,6 @@
 
 		<!-- Start random motion node -->
 		<node name="service_sample_node" pkg="lego_moveit" type="service_sample_node" output="screen" />
-		<param name="base_frame" type="str" value="$(arg namespace)/base_link" />
+ 
 	</group>
 </launch>

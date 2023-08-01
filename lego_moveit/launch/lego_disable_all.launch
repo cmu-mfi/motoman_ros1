@@ -1,0 +1,19 @@
+<launch>
+
+    <node ns="architect" name="disable_robot" pkg="lego_moveit" type="rosservice_disable.py" output="screen">
+		<param name="namespace" type="str" value="architect" />
+	</node> 
+
+    <node ns="builder" name="disable_robot" pkg="lego_moveit" type="rosservice_disable.py" output="screen">
+		<param name="namespace" type="str" value="builder" />
+	</node> 
+
+    <node ns="creator" name="disable_robot" pkg="lego_moveit" type="rosservice_disable.py" output="screen">
+		<param name="namespace" type="str" value="creator" />
+	</node> 
+
+    <node ns="developer" name="disable_robot" pkg="lego_moveit" type="rosservice_disable.py" output="screen">
+		<param name="namespace" type="str" value="developer" />
+	</node> 
+
+</launch>

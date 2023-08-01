@@ -1,0 +1,12 @@
+<launch>
+	<!-- start robot A and launch assembly task on it -->
+	<include file="$(find lego_moveit)/launch/lego_moveit_A.launch" />
+	
+	<!-- start robot D and launch assembly task on it -->
+	<include file="$(find lego_moveit)/launch/lego_moveit_B.launch" />
+
+	<include file="$(find lego_moveit)/launch/lego_moveit_C.launch" />
+
+	<include file="$(find lego_moveit)/launch/lego_moveit_D.launch" />
+
+</launch>
