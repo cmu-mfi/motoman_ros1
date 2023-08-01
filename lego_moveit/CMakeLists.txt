@@ -172,6 +172,7 @@ target_link_libraries(service_sample_node
 
 target_link_libraries(random_motion
   ${catkin_LIBRARIES}
+  jsoncpp
 )
 #############
 ## Install ##
