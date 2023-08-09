@@ -1,3 +1,5 @@
+[**Go to MFI Main Page**](https://github.com/cmu-mfi/)
+
 ## Pre-requisites
 
 - **mongo c++ drivers**
@@ -32,3 +34,6 @@ wstool update -t .
 ## Installation
 
 - Use `catkin build` to build the package
+
+
+[**Go to MFI Main Page**](https://github.com/cmu-mfi/)
