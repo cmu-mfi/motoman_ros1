@@ -13,8 +13,8 @@ Tutorials and documentation for ROS1 from Yaskawa available here: [Motoman Wiki]
 #### **GP4 Moveit Configuration**
 The repo consists moveit configuration files for GP4 in the `motoman_gp4_moveit_config` package. It depends on `motoman_gp4_support` package.
 
-- Execute RViz simulation&emsp;: `roslaunch motoman_gp4_moveit_config moveit_planning_execution sim:=true`
-- Execute MoveIt for real robot&nbsp;: `roslaunch motoman_gp4_moveit_config moveit_planning_execution sim:=false robot_ip:=192.168.1.7`
+- Execute RViz simulation: `roslaunch motoman_gp4_moveit_config moveit_planning_execution sim:=true`
+- Execute MoveIt for real robot: `roslaunch motoman_gp4_moveit_config moveit_planning_execution sim:=false robot_ip:=192.168.1.7`
 
   *`motoman_gp4_support` package [here](https://github.com/cmu-mfi/motoman_ros1/tree/master/depend-packages/motoman/motoman_gp4_support) was modified to not pass `controller` argument. [Line added](https://github.com/cmu-mfi/motoman_ros1/blob/741ad854da63d73dff111be450eabcccc8984c65/depend-packages/motoman/motoman_gp4_support/launch/robot_interface_streaming_gp4.launch#L14) to `robot_interface_streaming_gp4.launch`*
 
