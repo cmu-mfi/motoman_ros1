@@ -1,5 +1,3 @@
-# motoman_ros1
-
 ## Pre-requisites
 
 - **mongo c++ drivers**
