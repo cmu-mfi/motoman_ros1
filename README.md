@@ -2,7 +2,7 @@
 
 ## Important Assets
 
-#### **Support package from motoman**
+### **Support package from motoman**
 ROS support packages are [provided by motoman](https://github.com/ros-industrial/motoman) for each robot. Below are the links for GP4
 
 - [URDF files](https://github.com/cmu-mfi/motoman_ros1/tree/master/depend-packages/motoman/motoman_gp4_support/urdf)
@@ -10,7 +10,7 @@ ROS support packages are [provided by motoman](https://github.com/ros-industrial
 
 Tutorials and documentation for ROS1 from Yaskawa available here: [Motoman Wiki](http://wiki.ros.org/motoman)
 
-#### **GP4 MoveIt Configuration**
+### **GP4 MoveIt Configuration**
 The repo consists moveit configuration files for GP4 in the `motoman_gp4_moveit_config` package. It depends on `motoman_gp4_support` package.
 
 - Execute RViz simulation: `roslaunch motoman_gp4_moveit_config moveit_planning_execution sim:=true`
