@@ -25,7 +25,7 @@ Then in another terminal execute below to be able to send motion commands.
 ```console
 rosservice call /robot_enable
 ```
-  *`motoman_gp4_support` package [here](https://github.com/cmu-mfi/motoman_ros1/tree/master/depend-packages/motoman/motoman_gp4_support) was modified to not pass `controller` argument. [Line added](https://github.com/cmu-mfi/motoman_ros1/blob/741ad854da63d73dff111be450eabcccc8984c65/depend-packages/motoman/motoman_gp4_support/launch/robot_interface_streaming_gp4.launch#L14) to `robot_interface_streaming_gp4.launch`*
+>  *`motoman_gp4_support` package [here](https://github.com/cmu-mfi/motoman_ros1/tree/master/depend-packages/motoman/motoman_gp4_support) was modified to not pass `controller` argument. [Line added](https://github.com/cmu-mfi/motoman_ros1/blob/741ad854da63d73dff111be450eabcccc8984c65/depend-packages/motoman/motoman_gp4_support/launch/robot_interface_streaming_gp4.launch#L14) to `robot_interface_streaming_gp4.launch`*
 
 - Execute MoveIt in a namespace: Launch files in `lego_moveit` can be used as examples. [`lego_moveit_A.launch`](https://github.com/cmu-mfi/motoman_ros1/blob/master/lego_moveit/launch/lego_moveit_A.launch) [`lego_moveit_sim.launch`](https://github.com/cmu-mfi/motoman_ros1/blob/master/lego_moveit/launch/lego_moveit_sim.launch)
 
