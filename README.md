@@ -14,11 +14,11 @@ Tutorials and documentation for ROS1 from Yaskawa available here: [Motoman Wiki]
 The repo consists moveit configuration files for GP4 in the `motoman_gp4_moveit_config` package. It depends on `motoman_gp4_support` package.
 
 - Execute RViz simulation
-```console
+```shell
 roslaunch motoman_gp4_moveit_config moveit_planning_execution sim:=true
 ```
 - Execute MoveIt for real robot (replace the IP with your robot IP):
-```console
+```bash
 roslaunch motoman_gp4_moveit_config moveit_planning_execution sim:=false robot_ip:=192.168.1.7
 ```
 Then in another terminal execute below to be able to send motion commands.
