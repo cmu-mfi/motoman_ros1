@@ -1,25 +1,41 @@
 <launch>
-  <!-- By default we do not overwrite the URDF. Change the following to true to change the default behavior -->
-  <arg name="load_robot_description" default="false"/>
+  <!-- By default we do not overwrite the URDF. Change the following to true to change the default
+  behavior -->
+  <arg name="load_robot_description" default="false" />
 
   <!-- The name of the parameter under which the URDF is loaded -->
-  <arg name="robot_description" default="robot_description"/>
+  <arg name="robot_description" default="robot_description" />
 
-  <!-- Load universal robot description format (URDF) -->
-  <param if="$(arg load_robot_description)" name="$(arg robot_description)" command="xacro  '$(find motoman_gp4_support)/urdf/gp4.xacro'"/>
+  <!-- By default, use no tool URDF file -->
+  <arg name="default_tool" default="true" />
+  <arg name="urdf_dir" default="" />
 
-  <!-- The semantic description that corresponds to the URDF -->
-  <param name="$(arg robot_description)_semantic" textfile="$(find motoman_gp4_moveit_config)/config/motoman_gp4.srdf" />
+  <group if="$(arg default_tool)">
+    <!-- Load universal robot description format (URDF) -->
+    <param if="$(arg load_robot_description)" name="$(arg robot_description)" command="xacro  '$(find motoman_gp4_support)/urdf/gp4.xacro'" />
+
+    <!-- The semantic description that corresponds to the URDF -->
+    <param name="$(arg robot_description)_semantic" textfile="$(find motoman_gp4_moveit_config)/config/motoman_gp4.srdf" />
+  </group>
+
+  <group unless="$(arg default_tool)">
+    <!-- Load universal robot description format (URDF) -->
+    <param if="$(arg load_robot_description)" name="$(arg robot_description)" command="xacro  '$(arg urdf_path)/gp4.xacro'" />
+
+    <!-- The semantic description that corresponds to the URDF -->
+    <param name="$(arg robot_description)_semantic" textfile="$(arg urdf_path)/gp4.srdf" />
+  </group>
 
   <!-- Load updated joint limits (override information from URDF) -->
   <group ns="$(arg robot_description)_planning">
-    <rosparam command="load" file="$(find motoman_gp4_moveit_config)/config/joint_limits.yaml"/>
-    <rosparam command="load" file="$(find motoman_gp4_moveit_config)/config/cartesian_limits.yaml"/>
+    <rosparam command="load" file="$(find motoman_gp4_moveit_config)/config/joint_limits.yaml" />
+    <rosparam command="load" file="$(find motoman_gp4_moveit_config)/config/cartesian_limits.yaml" />
   </group>
 
-  <!-- Load default settings for kinematics; these settings are overridden by settings in a node's namespace -->
+  <!-- Load default settings for kinematics; these settings are overridden by settings in a node's
+  namespace -->
   <group ns="$(arg robot_description)_kinematics">
-    <rosparam command="load" file="$(find motoman_gp4_moveit_config)/config/kinematics.yaml"/>
+    <rosparam command="load" file="$(find motoman_gp4_moveit_config)/config/kinematics.yaml" />
 
   </group>
 
