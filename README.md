@@ -69,7 +69,7 @@ wstool update -t .
 
 ## MFI Testbed Application Launch Files
 
-* `lego_moveit_yk.launch`:  Connect with a robot. Also starts moveit interface and yk_tasks ros service interface. More info on yk_tasks available [here](https://github.com/cmu-mfi/motoman_ros1/blob/main/yk_tasks/README.md)
+* `lego_moveit_yk.launch`:  Connect with a robot. Also starts moveit interface and yk_tasks ros service interface. More info on yk_tasks available [here](https://github.com/cmu-mfi/motoman_ros1/blob/master/yk_tasks/README.md)
 ```
 roslaunch testbed_main lego_moveit_yk namespace:=yk_architect
 ```
