@@ -1,11 +1,6 @@
 <launch>
 	<arg name="namespace" default="sim" />
 	<group ns="$(arg namespace)">
-
-		<!-- start service interface with yk -->
-		<include file="$(find testbed_main)/launch/lego_moveit/lego_moveit_yk.launch">
-			<arg name="namespace" value="$(arg namespace)" />
-		</include>
 		
 		<!-- get pose -->
 		<node name="service_sample_node" pkg="yk_tasks" type="service_sample_node" output="screen">

@@ -65,5 +65,20 @@ wstool update -t .
 
 - Use `catkin build` to build the package
 
+<br>
+
+# MFI Testbed Application
+
+## Launch Files
+
+* `lego_moveit_yk.launch`:  Connect with a robot. Also starts moveit interface and yk_tasks ros service interface. More info on yk_tasks available [here](https://github.com/cmu-mfi/motoman_ros1/blob/main/yk_tasks/README.md)
+```
+roslaunch testbed_main lego_moveit_yk namespace:=yk_architect
+```
+* `lego_get_pose.launch`:  Get pose of `flange` in `base_link` frame. Requires yk_tests ros service server running.
+```
+roslaunch testbed_main lego_get_pose namespace:=yk_architect
+```
+* Launch files in `testbed_utils/demos` are for running a demo activity on robots. Read launch files for more details
 
 [**Go to MFI Main Page**](https://github.com/cmu-mfi/)
