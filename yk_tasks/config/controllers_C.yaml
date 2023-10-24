@@ -1,0 +1,18 @@
+# controller_list:
+#   - name: ""
+#     action_ns: follow_joint_trajectory
+#     type: FollowJointTrajectory
+#     joints: [joint_1_s, joint_2_l, joint_3_u, joint_4_r, joint_5_b, joint_6_t]
+
+controller_list:
+  - name: /follow_joint_trajectory
+    action_ns: ""
+    type: FollowJointTrajectory
+    default: true
+    joints:
+    - joint_1_s
+    - joint_2_l
+    - joint_3_u
+    - joint_4_r
+    - joint_5_b
+    - joint_6_t

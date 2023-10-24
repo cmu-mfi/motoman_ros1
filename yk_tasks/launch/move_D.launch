@@ -1,0 +1,24 @@
+<launch>
+	<group ns="yk_destroyer">
+
+		<param name="tf_prefix" value="yk_destroyer" />
+
+		<rosparam command="load" ns="move_group" file="$(dirname)/../config/controllers_D.yaml" />
+		<!-- Launch moveit_planning_execution.launch from motoman_gp4_moveit_config package under
+		the 'yk_architect' namespace -->
+		<include file="$(find motoman_gp4_moveit_config)/launch/moveit_planning_execution.launch">
+			<arg name="robot_ip" value="192.168.1.74" />
+			<arg name="sim" value="false" />
+			<arg name="default_action_ns" value="false" />
+		</include>
+
+		<!-- Start move_for_lego node -->
+		<node name="yk_interface" pkg="yk_interface" type="yk_interface" output="screen">
+			<param name="group_name" type="str" value="manipulator" />
+		</node>
+
+		<node name="enable_robot" pkg="yk_interface" type="rosservice_enable.py" output="screen">
+			<param name="namespace" type="str" value="yk_destroyer" />
+		</node>
+	</group>
+</launch>

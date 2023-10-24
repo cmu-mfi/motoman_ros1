@@ -1,0 +1,12 @@
+<launch>
+	<!-- start robot A and launch assembly task on it -->
+	<include file="$(find yk_interface)/launch/move_A.launch" />
+	
+	<!-- start robot D and launch assembly task on it -->
+	<include file="$(find yk_interface)/launch/move_B.launch" />
+
+	<include file="$(find yk_interface)/launch/move_C.launch" />
+
+	<include file="$(find yk_interface)/launch/move_D.launch" />
+
+</launch>

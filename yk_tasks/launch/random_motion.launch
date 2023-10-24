@@ -1,0 +1,15 @@
+<launch>
+	<arg name="namespace" default="sim" />
+    <arg name="config_fname" default="$(find yk_interface)/config/random_motion_s1.json"/>
+    <arg name="point_count" default="4" />
+
+    <group ns="$(arg namespace)">
+
+		<!-- Start random motion node -->
+        <node name="random_motion" pkg="yk_interface" type="random_motion" output="screen">
+            <param name="config_fname" type="str" value="$(arg config_fname)" />
+            <param name="point_count" type="int" value="$(arg point_count)" />
+        </node>
+	</group>
+
+</launch>
