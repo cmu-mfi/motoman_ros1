@@ -1,15 +1,15 @@
 <launch>
     <!-- start robot A and launch assembly task on it --> 
-	<include file="$(find testbed_main)/launch/lego_moveit/lego_moveit_yk.launch">
+	<include file="$(find testbed_utils)/launch/lego_moveit/lego_moveit_yk.launch">
         <arg name="namespace" value="yk_architect" />
     </include>
 
-	<include file="$(find gp4_lego)/simulation/launch/gp4_gazebo.launch">
+	<!-- <include file="$(find gp4_lego)/simulation/launch/gp4_gazebo.launch">
 		<arg name="namespace" value="yk_architect" />
 	</include>
 	
     <include file="$(find gp4_lego)/launch/task_planning_cartesian_node.launch">
 		<arg name="namespace" value="yk_architect" />
-	</include>
+	</include> -->
 
 </launch>

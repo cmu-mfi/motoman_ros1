@@ -1,6 +1,6 @@
 <launch>
     <!-- start robot A and launch assembly task on it --> 
-    <include file="$(find testbed_main)/launch/lego_moveit/lego_moveit_yk.launch">
+    <include file="$(find testbed_utils)/launch/lego_moveit/lego_moveit_yk.launch">
         <arg name="namespace" value="yk_architect" />
     </include>
 
@@ -13,7 +13,7 @@
 	</include>
 	
     <!-- start robot D and launch assembly task on it -->
-    <include file="$(find testbed_main)/launch/lego_moveit_yk.launch">
+    <include file="$(find testbed_utils)/launch/lego_moveit/lego_moveit_yk.launch">
         <arg name="namespace" value="yk_destroyer" />
     </include>
 	<include file="$(find gp4_lego)/simulation/launch/gp4_gazebo.launch">
@@ -23,26 +23,25 @@
 		<arg name="namespace" value="yk_destroyer" />
     </include>
 
-	<!-- start robot B and launch random motion task on it
+    <!-- start robot B and launch random motion task on it -->
 	<include file="lego_moveit/lego_moveit_yk.launch">
         <arg name="namespace" value="yk_builder" />
     </include>
 
     <include file="lego_moveit/lego_random_motion.launch">
         <arg name="namespace" value="yk_builder" />
-        <arg name="config_fname" value="$(find testbed_main)/config/random_motion_s1.json" />
+        <arg name="config_fname" value="$(find testbed_utils)/config/random_motion_s1.json" />
         <arg name="point_count" value="4" />
     </include>
     
-	 start robot C and launch random motion task on it
+    <!-- start robot C and launch random motion task on it -->
 	<include file="lego_moveit/lego_moveit_yk.launch">
         <arg name="namespace" value="yk_creator" />
     </include>
     
     <include file="lego_moveit/lego_random_motion.launch">
         <arg name="namespace" value="yk_creator" />
-        <arg name="config_fname" value="$(find testbed_main)/config/random_motion_s2.json" />
+        <arg name="config_fname" value="$(find testbed_utils)/config/random_motion_s2.json" />
         <arg name="point_count" value="4" />
     </include>
-    -->
 </launch>

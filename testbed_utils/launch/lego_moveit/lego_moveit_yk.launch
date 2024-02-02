@@ -12,22 +12,22 @@
 
 		<group if="$(eval namespace == 'yk_architect')">
 			<rosparam command="load" ns="move_group"
-				file="$(find testbed_main)/config/controllers_A.yaml" />
+				file="$(find testbed_utils)/config/controllers_A.yaml" />
 		</group>
 
 		<group if="$(eval namespace == 'yk_builder')">
 			<rosparam command="load" ns="move_group"
-				file="$(find testbed_main)/config/controllers_B.yaml" />
+				file="$(find testbed_utils)/config/controllers_B.yaml" />
 		</group>
 
 		<group if="$(eval namespace == 'yk_creator')">
 			<rosparam command="load" ns="move_group"
-				file="$(find testbed_main)/config/controllers_C.yaml" />
+				file="$(find testbed_utils)/config/controllers_C.yaml" />
 		</group>
 
 		<group if="$(eval namespace == 'yk_destroyer')">
 			<rosparam command="load" ns="move_group"
-				file="$(find testbed_main)/config/controllers_D.yaml" />
+				file="$(find testbed_utils)/config/controllers_D.yaml" />
 		</group>
 
 		<!-- Launch moveit_planning_execution.launch from motoman_gp4_moveit_config package -->
