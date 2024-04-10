@@ -1,11 +1,16 @@
 #include <ros/ros.h>
 #include <yk_tasks/SetPose.h>
 #include <yk_tasks/GetPose.h>
-
+#include <yk_tasks/SetJoints.h>
+#include <std_msgs/String.h>
+#include <std_msgs/Header.h>
+#include <ros/ros.h>
 
 void get_pose_client(ros::NodeHandle nh);
 
 void make_a_move_client(ros::NodeHandle nh);
+
+void move_joints_client(ros::NodeHandle nh);
 
 int main(int argc, char **argv)
 {
@@ -19,14 +24,16 @@ int main(int argc, char **argv)
 
   	std::string base_frame, task;
   	private_node_handle.param<std::string>("base_frame", base_frame, "base_link"); // parameter name, string object reference, default value
-	private_node_handle.param<std::string>("task", task, "get_pose"); // parameter name, string object reference, default value
+	private_node_handle.param<std::string>("task", task, "set_joints"); // parameter name, string object reference, default value
 
-	ROS_INFO("sample node has been initialized");
+	ROS_INFO("sample node has been initialized ok");
 
 	if(task == "get_pose")
     	get_pose_client(nh);
 	else if(task == "make_a_move")
 		make_a_move_client(nh);
+	else if(task == "set_joints")
+		move_joints_client(nh);
 	else
 		ROS_ERROR_STREAM("Invalid task: "<<task);
 
@@ -70,4 +77,54 @@ void make_a_move_client(ros::NodeHandle nh)
 	{
 		ROS_INFO_STREAM("Pose: "<<srv.response.pose);
   	}
+}
+
+void move_joints_client(ros::NodeHandle nh)
+{
+	ROS_INFO_STREAM("Calling SetJoints service");
+
+	ros::Publisher event_pub = nh.advertise<std_msgs::Header>("event_rec",10);
+
+	float positions[2][6] = 
+		{1.8, 5.681410402758047e-05, -2.1914011085755192e-05, 4.135732524446212e-05, -1.5026921033859253, -3.834952076431364e-05,
+		-1.8, 5.681410402758047e-05, -2.1914011085755192e-05, 4.135732524446212e-05, -1.5026921033859253, -3.834952076431364e-05};
+		// {0.8287244439125061, 0.14966729283332825, 0.49648383259773254, 0.031059350818395615, -1.8177671432495117, -0.28482189774513245,
+		// 0.8555324673652649, 0.18888795375823975, 0.5419992208480835, 0.03393368422985077, -1.825234055519104, -0.3105544149875641};
+
+	int index = 0;
+
+	for (int i = 0; i<100; ++i)
+	{
+		sensor_msgs::JointState joint_goal_pose; 
+		joint_goal_pose.name.push_back("joint_1_s");
+		joint_goal_pose.name.push_back("joint_2_l");
+		joint_goal_pose.name.push_back("joint_3_u");
+		joint_goal_pose.name.push_back("joint_4_r");
+		joint_goal_pose.name.push_back("joint_5_b");
+		joint_goal_pose.name.push_back("joint_6_t");
+
+		ros::ServiceClient client = nh.serviceClient<yk_tasks::SetJoints>("yk_set_joints");
+		yk_tasks::SetJoints srv;
+
+		for(int j=0; j< 6; j++)
+		{
+			joint_goal_pose.position.push_back(positions[index][j]);
+		}
+
+		srv.request.state = joint_goal_pose;
+
+		if(client.call(srv))
+		{
+			std_msgs::Header header;
+			header.stamp = ros::Time::now();
+			header.frame_id = index?"Robot Position 2":"Robot Position 1";
+			event_pub.publish(header);
+
+			ROS_INFO_STREAM("joints reached-"<<index<<"-"<<i);
+			ROS_INFO_STREAM(joint_goal_pose);
+		}
+
+		index = (i+1)%2;
+		ros::Duration(0.5).sleep();
+	}
 }

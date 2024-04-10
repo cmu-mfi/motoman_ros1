@@ -1,6 +1,8 @@
 #request
 geometry_msgs/Pose pose #Goal Pose of End Effector
 string base_frame #Frame of the Coordinates
+float64 max_velocity_scaling_factor
+float64 max_acceleration_scaling_factor
 ---
 
 #response

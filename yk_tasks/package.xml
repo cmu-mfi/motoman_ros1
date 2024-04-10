@@ -15,7 +15,7 @@
   <build_depend>roscpp</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>moveit_msgs</build_depend>
-  
+
   <build_export_depend>motoman_gp4_moveit_config</build_export_depend>
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>moveit_msgs</build_export_depend>
@@ -24,10 +24,14 @@
   <exec_depend>roscpp</exec_depend>
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>moveit_msgs</exec_depend>
+  <exec_depend>message_generation</exec_depend>
 
+  <depend>yk_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
   <depend>tf</depend>
   <depend>std_msgs</depend>
+  <depend>actionlib_msgs</depend>
 
   <export>
     <!-- Other tools can request additional information be placed here -->

@@ -4,6 +4,8 @@ project(yk_tasks)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
+find_package(Boost REQUIRED COMPONENTS system)
+
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
   motoman_gp4_moveit_config
@@ -15,13 +17,26 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   moveit_msgs
+  actionlib
+  actionlib_msgs
+  yk_msgs
+)
+
+## Generate actions in the 'action' folder
+add_action_files(
+  DIRECTORY action
+  FILES 
+  GoToJoints.action
+  GoToPose.action
 )
 
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
-  SetPose.srv
   GetPose.srv
+  GetPoseStamped.srv
+  SetPose.srv
+  SetJoints.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
@@ -30,6 +45,7 @@ generate_messages(
   geometry_msgs
   moveit_msgs
   std_msgs
+  actionlib_msgs
 )
 
 ###################################
@@ -44,6 +60,7 @@ catkin_package(
      geometry_msgs
      moveit_msgs
      std_msgs
+     actionlib_msgs
 )
 
 ###########

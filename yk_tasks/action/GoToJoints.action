@@ -1,0 +1,10 @@
+#request
+sensor_msgs/JointState state #Goal target of End Effector
+float64 max_velocity_scaling_factor
+float64 max_acceleration_scaling_factor
+---
+#response
+sensor_msgs/JointState state
+---
+string feedback
+
