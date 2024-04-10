@@ -56,6 +56,9 @@
   <exec_depend>rospy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
 
+  <depend>motoman_gp4_moveit_config</depend>
+  <depend>yk_tasks</depend>
+
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
