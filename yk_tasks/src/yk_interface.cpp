@@ -89,6 +89,7 @@ bool YK_Interface::setPose(yk_msgs::SetPose::Request &req, yk_msgs::SetPose::Res
 			if (mp_res.error_code.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
 			{
 				std::cerr << "Planning failed due to ERROR CODE = " << mp_res.error_code.val << std::endl;
+				ret_val.val = mp_res.error_code.val;
 			}
 			else
 			{
@@ -365,7 +366,7 @@ void YK_Interface::goToPoseCallback(const yk_tasks::GoToPoseGoalConstPtr &goal)
 	moveit_msgs::MoveItErrorCodes ret_val;
 	ret_val.val = moveit_msgs::MoveItErrorCodes::TIMED_OUT;
 
-	while (ret_val.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
+	while (ret_val.val == moveit_msgs::MoveItErrorCodes::TIMED_OUT)
 	{
 		if (plan_kinematics_path_client.call(srv))
 		{
@@ -375,6 +376,7 @@ void YK_Interface::goToPoseCallback(const yk_tasks::GoToPoseGoalConstPtr &goal)
 				std::cerr << "Planning failed due to ERROR CODE = " << mp_res.error_code.val << std::endl;
 				go_to_pose_feedback_.feedback = "Planning failed";
 				go_to_pose_as_.publishFeedback(go_to_pose_feedback_);
+				ret_val.val = mp_res.error_code.val;
 			}
 			else
 			{
