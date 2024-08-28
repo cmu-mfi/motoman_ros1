@@ -1,0 +1,16 @@
+services:
+  motoros:
+    build:
+        context: .
+        dockerfile: Dockerfile
+    image: motoros:latest
+    container_name: motoros-container
+    stdin_open: true
+    tty: true
+    network_mode: "host"
+    environment:
+      - "ROS_MASTER_URI=http://192.168.1.2:11311"
+      - "DISPLAY"
+    volumes:
+      - "/tmp/.X11-unix:/tmp/.X11-unix"
+      - "/dev/*:/dev/*"
