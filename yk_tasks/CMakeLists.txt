@@ -28,6 +28,7 @@ add_action_files(
   FILES 
   GoToJoints.action
   GoToPose.action
+  ExecuteCartesianTrajectory.action
 )
 
 ## Generate services in the 'srv' folder

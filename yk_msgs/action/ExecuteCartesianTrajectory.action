@@ -1,0 +1,11 @@
+#request
+geometry_msgs/Pose[] trajectory # Goal trajecotry of the EE pose
+float64 eef_step # EE step size for waypoint interpolation
+float64 jump_threshold # Max jump for joint positions, used to prevent rapid IK unwinding
+float64 max_velocity_scaling_factor
+float64 max_acceleration_scaling_factor
+---
+#response
+geometry_msgs/Pose pose
+---
+string feedback

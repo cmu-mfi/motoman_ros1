@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_action_files(
   DIRECTORY action
   FILES 
+  ExecuteCartesianTrajectory.action
   GoToJoints.action
   GoToPose.action
 )

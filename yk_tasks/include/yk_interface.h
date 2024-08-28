@@ -4,8 +4,9 @@
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
 
-#include <yk_tasks/GoToPoseAction.h>
-#include <yk_tasks/GoToJointsAction.h>
+#include <yk_msgs/GoToPoseAction.h>
+#include <yk_msgs/GoToJointsAction.h>
+#include <yk_msgs/ExecuteCartesianTrajectoryAction.h>
 #include <yk_msgs/GetPose.h>
 #include <yk_msgs/GetPoseStamped.h>
 #include <yk_msgs/SetPose.h>
@@ -37,13 +38,17 @@ private:
 	geometry_msgs::PoseStamped last_pose_;
 	sensor_msgs::JointState last_joints_;
 	ros::NodeHandle nh_;
-	actionlib::SimpleActionServer<yk_tasks::GoToPoseAction> go_to_pose_as_;
-	yk_tasks::GoToPoseFeedback go_to_pose_feedback_;
-	yk_tasks::GoToPoseResult go_to_pose_result_;
+	actionlib::SimpleActionServer<yk_msgs::GoToPoseAction> go_to_pose_as_;
+	yk_msgs::GoToPoseFeedback go_to_pose_feedback_;
+	yk_msgs::GoToPoseResult go_to_pose_result_;
 
-	actionlib::SimpleActionServer<yk_tasks::GoToJointsAction> go_to_joints_as_;
-	yk_tasks::GoToJointsFeedback go_to_joints_feedback_;
-	yk_tasks::GoToJointsResult go_to_joints_result_;
+	actionlib::SimpleActionServer<yk_msgs::GoToJointsAction> go_to_joints_as_;
+	yk_msgs::GoToJointsFeedback go_to_joints_feedback_;
+	yk_msgs::GoToJointsResult go_to_joints_result_;
+
+	actionlib::SimpleActionServer<yk_msgs::ExecuteCartesianTrajectoryAction> execute_cartesian_trajectory_as_;
+	yk_msgs::ExecuteCartesianTrajectoryFeedback execute_cartesian_trajectory_feedback_;
+	yk_msgs::ExecuteCartesianTrajectoryResult execute_cartesian_trajectory_result_;
 
 	moveit::planning_interface::MoveGroupInterface move_group_;
 	
@@ -56,7 +61,7 @@ public:
 	/**
 	 * @brief ROS service callback for "yk_get_pose" to get current pose of the manipulator
 	*/
-	bool getPose(yk_msgs::GetPoseStamped::Request &req, yk_msgs::GetPoseStamped::Response &res);
+	bool getPose(yk_msgs::GetPose::Request &req, yk_msgs::GetPose::Response &res);
 
 	// Redundant function. Changed getPose to have Header stamp.
 	bool getPoseStamped(yk_msgs::GetPoseStamped::Request &req, yk_msgs::GetPoseStamped::Response &res);
@@ -77,9 +82,11 @@ public:
 
 	bool stopTrajectory(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
 
-	void goToJointsCallback(const yk_tasks::GoToJointsGoalConstPtr &goal);
+	void goToJointsCallback(const yk_msgs::GoToJointsGoalConstPtr &goal);
 
-	void goToPoseCallback(const yk_tasks::GoToPoseGoalConstPtr &goal);
+	void goToPoseCallback(const yk_msgs::GoToPoseGoalConstPtr &goal);
+	
+	void executeCartesianTrajectoryCallback(const yk_msgs::ExecuteCartesianTrajectoryGoalConstPtr & goal);
 
 };
 
