@@ -14,6 +14,8 @@ Use following in another terminal to get run ROS commands in the container
 docker exec -it motoros-container bash
 ```
 
+> Note: Please change ROS_MASTER_URI in `compose.yml`. If not running roscore on host, comment out the line.
+
 ## Installation - Build from Source
 
 ### Pre-requisites
@@ -59,6 +61,8 @@ roslaunch yk_launch moveit.launch namespace:=<namespace> sim:=<true/false>
 ```
 * `sim`: Default value is `false`. If want to run moveit simulation, specify `true`.
 * `namespace`: As the name suggests, it launches a robot nodes on specified namespace. If *sim:=false*, then namespace value need to be defined in *yk_launch/launch/moveit.launch*. Definition includes robot ip address and corresponding controller file in the directory *yk_launch/config*
+
+> Note: When running with a real robot, ensure that you change the ip addresses in yk_launch/moveit.launch file.
 
 ## Important Assets
 
