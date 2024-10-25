@@ -1,4 +1,4 @@
-## Installation - Dockerfile
+## Installation Option 1 - Dockerfile
 
 *Pre-requisite: [Install Docker Engine](https://docs.docker.com/engine/install/).*
 
@@ -8,15 +8,18 @@ docker compose up --build
 
 The above command will build and instantiate the built image as a container `motoros-container`
 
-Use following in another terminal to get run ROS commands in the container
+Use following in another terminal to get run ROS commands in the container. 
 
 ```shell
+xhost +
 docker exec -it motoros-container bash
 ```
 
 > Note: Please change ROS_MASTER_URI in `compose.yml`. If not running roscore on host, comment out the line.
 
-## Installation - Build from Source
+> Note: Use `xhost +` only if you intend to run RViz from the docker. 
+
+## Installation Option 2 - Build from Source
 
 ### Pre-requisites
 
@@ -62,7 +65,7 @@ roslaunch yk_launch moveit.launch namespace:=<namespace> sim:=<true/false>
 * `sim`: Default value is `false`. If want to run moveit simulation, specify `true`.
 * `namespace`: As the name suggests, it launches a robot nodes on specified namespace. If *sim:=false*, then namespace value need to be defined in *yk_launch/launch/moveit.launch*. Definition includes robot ip address and corresponding controller file in the directory *yk_launch/config*
 
-> Note: When running with a real robot, ensure that you change the ip addresses in yk_launch/moveit.launch file.
+> Note: When running with a real robot, ensure that you change the ip addresses in `yk_launch/launch/moveit.launch` file.
 
 ## Important Assets
 
