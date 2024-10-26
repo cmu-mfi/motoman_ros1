@@ -1,3 +1,11 @@
+
+## Pre-requisites
+
+1. A Yaskawa Robot
+2. Motoman ROS server. Follow instructions here: http://wiki.ros.org/motoman_driver/Tutorials/indigo/InstallServer
+
+> Note: The repository is setup and tested for GP4 robot. Other Yaskawa robots will require necessary support and moveit_config packages, which can be pulled from here: https://github.com/ros-industrial/motoman.
+
 ## Installation - Dockerfile
 
 *Pre-requisite: [Install Docker Engine](https://docs.docker.com/engine/install/).*
@@ -53,7 +61,7 @@ wstool update -t .
 
 - Use `catkin build` to build the package
 
-## ROS Launch Files
+## ROS Launch Command
 
 `moveit.launch`:  Connect with a robot. Also starts moveit interface and yk_tasks ros service interface. More info on yk_tasks available [here](https://github.com/cmu-mfi/motoman_ros1/blob/master/yk_tasks/README.md)
 ```
