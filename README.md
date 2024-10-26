@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 
 ## Pre-requisites
 
@@ -7,10 +6,7 @@
 
 > Note: The repository is setup and tested for GP4 robot. Other Yaskawa robots will require necessary support and moveit_config packages, which can be pulled from here: https://github.com/ros-industrial/motoman.
 
-## Installation - Dockerfile
-=======
 ## Installation Option 1 - Dockerfile
->>>>>>> 0a52d1f738f1060d74424ea418903452b3e78beb
 
 *Pre-requisite: [Install Docker Engine](https://docs.docker.com/engine/install/).*
 
