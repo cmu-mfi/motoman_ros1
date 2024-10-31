@@ -14,32 +14,32 @@
 
 		<group if="$(eval namespace == 'yk_architect')">
 			<rosparam command="load" ns="move_group"
-				file="$(find testbed_utils)/config/controllers_A.yaml" />
+				file="$(find yk_launch)/config/controllers_A.yaml" />
 		</group>
 
 		<group if="$(eval namespace == 'yk_builder')">
 			<rosparam command="load" ns="move_group"
-				file="$(find testbed_utils)/config/controllers_B.yaml" />
+				file="$(find yk_launch)/config/controllers_B.yaml" />
 		</group>
 
 		<group if="$(eval namespace == 'yk_creator')">
 			<rosparam command="load" ns="move_group"
-				file="$(find testbed_utils)/config/controllers_C.yaml" />
+				file="$(find yk_launch)/config/controllers_C.yaml" />
 		</group>
 
 		<group if="$(eval namespace == 'yk_destroyer')">
 			<rosparam command="load" ns="move_group"
-				file="$(find testbed_utils)/config/controllers_D.yaml" />
+				file="$(find yk_launch)/config/controllers_D.yaml" />
 		</group>
 
 		<group if="$(eval namespace == 'sim1')">
 			<rosparam command="load" ns="move_group"
-				file="$(find testbed_utils)/config/controllers_sim1.yaml" />
+				file="$(find yk_launch)/config/controllers_sim1.yaml" />
 		</group>
 		
 		<group if="$(eval namespace == 'sim2')">
 			<rosparam command="load" ns="move_group"
-				file="$(find testbed_utils)/config/controllers_sim2.yaml" />
+				file="$(find yk_launch)/config/controllers_sim2.yaml" />
 		</group>
 
 		<!-- Launch moveit_planning_execution.launch from motoman_gp4_moveit_config package -->
