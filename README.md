@@ -8,7 +8,25 @@
 
 ## Installation Option 1 - Dockerfile
 
-*Pre-requisite: [Install Docker Engine](https://docs.docker.com/engine/install/).*
+**Pre-requisite**
+
+```shell
+# Check if docker is installed
+$ docker version
+Client: Docker Engine - Community
+ Version:           20.10.7
+...
+
+# Check if docker is running
+$ systemctl is-active docker
+active
+```
+
+* If installation is needed, install docker enginer from here: \
+[https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/)
+* If docker is not running, followin troubleshooting steps: [https://docs.docker.com/engine/daemon/troubleshoot/](https://docs.docker.com/engine/daemon/troubleshoot/)
+
+**Build and Run**
 
 ```shell
 docker compose up --build
