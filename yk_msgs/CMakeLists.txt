@@ -28,7 +28,9 @@ add_service_files(
   GetPose.srv
   GetPoseStamped.srv
   SetPose.srv
+  SetPoseFT.srv
   SetJoints.srv
+  ExecuteCartesianTrajectory.srv
 )
 
 ## Generate added messages and services with any dependencies listed here

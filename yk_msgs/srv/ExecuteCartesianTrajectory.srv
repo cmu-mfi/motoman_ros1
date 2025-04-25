@@ -1,0 +1,10 @@
+#request
+geometry_msgs/Pose[] poses # Goal trajectory of the EE pose
+float64 eef_step # EE step size for waypoint interpolation. optional (default = 0.01)
+float64 jump_threshold # Max jump for joint positions, used to prevent rapid IK unwinding. optional (default = 0.0)
+float64 max_velocity_scaling_factor # optional (default = 0.3)
+float64 max_acceleration_scaling_factor # optional (default = 0.3)
+float64 blend_radius # optional (default = 0.0)
+---
+#response
+geometry_msgs/Pose pose

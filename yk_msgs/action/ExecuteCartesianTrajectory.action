@@ -9,3 +9,5 @@ float64 max_acceleration_scaling_factor
 geometry_msgs/Pose pose
 ---
 string feedback
+float64 wp_pct # percentage of waypoint completed
+uint wp_id # Current if of the waypoint being executed

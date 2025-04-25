@@ -3,8 +3,13 @@ geometry_msgs/Pose pose #Goal Pose of End Effector
 string base_frame #Frame of the Coordinates
 float64 max_velocity_scaling_factor
 float64 max_acceleration_scaling_factor
-string traj_type #default is LIN, use PTP for joint-based trajectory
+bool[3] use_force
+bool[3] use_torque
+float64[3] force_thresholds
+float64[3] torque_thresholds
 ---
 
 #response
 geometry_msgs/Pose pose
+float64[3] force
+float64[3] torque

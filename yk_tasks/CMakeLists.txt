@@ -38,6 +38,7 @@ add_service_files(
   GetPoseStamped.srv
   SetPose.srv
   SetJoints.srv
+  SetPoseFT.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
