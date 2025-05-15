@@ -100,7 +100,12 @@ private:
 	bool planAndExecuteCartesianPath_(const std::vector<geometry_msgs::Pose> &waypoints, 
 									double eef_step, double jump_threshold, 
 									double max_velocity_scaling_factor, double max_acceleration_scaling_factor,
-									double blend_radius, bool async);
+									double blend_radius, bool async, std::string planner_id = "LIN");
+
+	bool planAndExecutePose_(const geometry_msgs::Pose &pose, 
+							double max_velocity_scaling_factor, double max_acceleration_scaling_factor,
+							std::string planner_id = "LIN",
+							bool async = false);
 
 	// WHO ADDED THIS?
 	moveit_msgs::PositionConstraint createPositionConstraint_(const geometry_msgs::PoseStamped &target_pose, const std::string &link_name, const double tolerance);

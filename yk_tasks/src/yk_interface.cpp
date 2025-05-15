@@ -50,168 +50,15 @@ bool YK_Interface::setPose(yk_msgs::SetPose::Request &req, yk_msgs::SetPose::Res
 
 	std::cout << "Let's Move!!";
 	std::cout << "New Move to: " << req.pose;
-	// moveit::planning_interface::MoveGroupInterface move_group."manipulator"); //move_group name to be changes
 
-	//******************************************************************
-	/**
-	 * Approach 1: Using plan_kinematics_path service
-	 * ISSUE: Planning errors due to exceeding vel/acc joint limits
-	 */
-	moveit_msgs::MotionPlanRequest mp_req;
-	moveit_msgs::MotionPlanResponse mp_res;
-
-	mp_req.pipeline_id = "pilz_industrial_motion_planner";
-	mp_req.planner_id = req.traj_type.compare("PTP") == 0 ? "PTP" : "LIN";
-	mp_req.group_name = "manipulator";
-	mp_req.num_planning_attempts = 5;
-	if (req.max_velocity_scaling_factor == 0.0)
-	{
-		mp_req.max_velocity_scaling_factor = 0.3;
-	}
-	else
-	{
-		mp_req.max_velocity_scaling_factor = req.max_velocity_scaling_factor;
-	}
-	if (req.max_acceleration_scaling_factor == 0.0)
-	{
-		mp_req.max_acceleration_scaling_factor = 0.3;
-	}
-	else
-	{
-		mp_req.max_acceleration_scaling_factor = req.max_acceleration_scaling_factor;
-	}
-
-	float pos_tolerance = 0.001;
-	float orient_tolerance = 0.01;
-	geometry_msgs::PoseStamped target_pose_stamped;
-	target_pose_stamped.header.frame_id = req.base_frame;
-	target_pose_stamped.pose = req.pose;
-	moveit_msgs::Constraints pose_goal = kinematic_constraints::constructGoalConstraints(move_group_.getEndEffectorLink(), target_pose_stamped, pos_tolerance, orient_tolerance);
-	mp_req.goal_constraints.push_back(pose_goal);
-
-	ros::ServiceClient plan_kinematics_path_client = nh_.serviceClient<moveit_msgs::GetMotionPlan>("plan_kinematic_path");
-	plan_kinematics_path_client.waitForExistence();
-	moveit_msgs::GetMotionPlan srv;
-	srv.request.motion_plan_request = mp_req;
-
-	moveit_msgs::MoveItErrorCodes ret_val;
-	ret_val.val = moveit_msgs::MoveItErrorCodes::TIMED_OUT;
-
-	while (ret_val.val == moveit_msgs::MoveItErrorCodes::TIMED_OUT)
-	{
-		if (plan_kinematics_path_client.call(srv))
-		{
-			mp_res = srv.response.motion_plan_response;
-			if (mp_res.error_code.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
-			{
-				std::cerr << "Planning failed due to ERROR CODE = " << mp_res.error_code.val << std::endl;
-				ret_val.val = mp_res.error_code.val;
-			}
-			else
-			{
-				std::cout << "Planning successful\n";
-				moveit::planning_interface::MoveGroupInterface::Plan plan;
-				plan.trajectory_ = mp_res.trajectory;
-				ret_val = move_group_.execute(plan);
-			}
-		}
-		else
-		{
-			ROS_ERROR("Failed to call service plan_kinematics_path");
-			return false;
-		}
-	}	
-
-	/**
-	 * Approach 2: using setPlannerId to use PILZ LIN planner
-	 * ERROR: "Cannot find planning configuration for group 'manipulator' using planner 'LIN'. Will use defaults instead."
-	 * ISSUE:  ompl_planning.yaml file needs to have "LIN" planner config. PILZ is not part of OMPL.
-	/*
-	move_group_.setPoseTarget(req.pose);
-	move_group_.setPoseReferenceFrame(req.base_frame);
-	move_group_.setPlannerId("LIN");
-	moveit_msgs::MoveItErrorCodes ret_val;
-	ret_val.val = moveit_msgs::MoveItErrorCodes::TIMED_OUT;
-
-	while (ret_val.val == moveit_msgs::MoveItErrorCodes::TIMED_OUT)
-	{
-		move_group_.setStartStateToCurrentState();
-		ret_val = move_group_.move();
-	}
-	*/
-
-	// Approach 3: using computeCartesianPath
-	/**
-	 * ERROR: Aborts with TIMEOUT. "Validation failed: Missing valid timestamp data for trajectory pt 1"
-	 *
-	moveit_msgs::MoveItErrorCodes ret_val;
-	ret_val.val = moveit_msgs::MoveItErrorCodes::TIMED_OUT;
-
-	while(ret_val.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
-	{
-		geometry_msgs::Pose start_pose = move_group_.getCurrentPose().pose;
-		geometry_msgs::Pose target_pose = req.pose;
-		std::vector<geometry_msgs::Pose> waypoints;
-		waypoints.push_back(start_pose);
-		waypoints.push_back(target_pose);
-
-		moveit_msgs::RobotTrajectory trajectory;
-		double fraction = move_group_.computeCartesianPath(waypoints, 0.01, 0.0, trajectory);
-
-		if (fraction > 0.95)
-		{
-			moveit::planning_interface::MoveGroupInterface::Plan plan;
-			plan.trajectory_ = trajectory;
-			ret_val = move_group_.execute(plan);
-		}
-		else
-		{
-			ROS_ERROR("Failed to compute cartesian path");
-			return false;
-		}
-	}
-	*/
-	/**
-	 * Approach 4
-	 * ISSUE: Joint space trajectory. Does weird trajectory sometimes.
-	 *
-	move_group_.setPlannerId("BiTRRT");
-	std::cout<<"\nPrinting Planner Params\n";
-	std::map<std::string,std::string> planner_params = move_group_.getPlannerParams("BiTRRT");
-	for (const auto& pair : planner_params) {
-        std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
-    }
-	move_group_.setPoseReferenceFrame(req.base_frame);
-	std::cout<<"Planning Frame.." << move_group_.getPlanningFrame();
-
-	move_group_.setPoseTarget(req.pose);
-	std::cout<<"TargetPose set";
-
-	moveit_msgs::MoveItErrorCodes ret_val = move_group_.move();
-	// return value is of type MoveitErrorCodes message
-
-	std::cout<<"Return Value"<<ret_val;
-
-	while (ret_val.val == moveit_msgs::MoveItErrorCodes::TIMED_OUT)
-	{
-		ret_val = move_group_.move();
-
-	}
-	*/
-	//******************************************************************
+	bool success = planAndExecutePose_(req.pose, req.max_velocity_scaling_factor, req.max_acceleration_scaling_factor, req.traj_type);
 
 	res.pose = move_group_.getCurrentPose().pose;
 	std::cout << res.pose;
 
 	async_spinner.stop();
 
-	if (ret_val.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
-	{
-		std::cerr << "Move failed due to ERROR CODE=" << ret_val;
-		return false;
-	}
-
-	return true;
+	return success;
 }
 
 bool YK_Interface::setJoints(yk_msgs::SetJoints::Request &req, yk_msgs::SetJoints::Response &res)
@@ -332,83 +179,15 @@ void YK_Interface::goToPoseCallback(const yk_msgs::GoToPoseGoalConstPtr &goal)
 	std::cout << "New Move to: " << goal->pose;
 	// moveit::planning_interface::MoveGroupInterface move_group."manipulator"); //move_group name to be changes
 
-	//******************************************************************
-	/**
-	 * Approach 1: Using plan_kinematics_path service
-	 * ISSUE: Planning errors due to exceeding vel/acc joint limits
-	 */
-	moveit_msgs::MotionPlanRequest mp_req;
-	moveit_msgs::MotionPlanResponse mp_res;
+	bool success = planAndExecutePose_(goal->pose, goal->max_velocity_scaling_factor, goal->max_acceleration_scaling_factor, goal->traj_type, false);
 
-	mp_req.pipeline_id = "pilz_industrial_motion_planner";
-	mp_req.planner_id = goal->traj_type.compare("PTP") == 0 ? "PTP" : "LIN";
-	mp_req.group_name = "manipulator";
-	mp_req.num_planning_attempts = 5;
-	if (goal->max_velocity_scaling_factor == 0.0)
+	if (!success)
 	{
-		mp_req.max_velocity_scaling_factor = 0.3;
+		go_to_pose_feedback_.feedback = "Move failed";
+		go_to_pose_as_.publishFeedback(go_to_pose_feedback_);
+		go_to_pose_as_.setAborted(go_to_pose_result_);
+		return;
 	}
-	else
-	{
-		mp_req.max_velocity_scaling_factor = goal->max_velocity_scaling_factor;
-	}
-	if (goal->max_acceleration_scaling_factor == 0.0)
-	{
-		mp_req.max_acceleration_scaling_factor = 0.3;
-	}
-	else
-	{
-		mp_req.max_acceleration_scaling_factor = goal->max_acceleration_scaling_factor;
-	}
-
-	float pos_tolerance = 0.001;
-	float orient_tolerance = 0.01;
-	geometry_msgs::PoseStamped target_pose_stamped;
-	target_pose_stamped.header.frame_id = goal->base_frame;
-	target_pose_stamped.pose = goal->pose;
-	moveit_msgs::Constraints pose_goal = kinematic_constraints::constructGoalConstraints(move_group_.getEndEffectorLink(), target_pose_stamped, pos_tolerance, orient_tolerance);
-	mp_req.goal_constraints.push_back(pose_goal);
-
-	ros::ServiceClient plan_kinematics_path_client = nh_.serviceClient<moveit_msgs::GetMotionPlan>("plan_kinematic_path");
-	plan_kinematics_path_client.waitForExistence();
-	moveit_msgs::GetMotionPlan srv;
-	srv.request.motion_plan_request = mp_req;
-
-	moveit_msgs::MoveItErrorCodes ret_val;
-	ret_val.val = moveit_msgs::MoveItErrorCodes::TIMED_OUT;
-
-	while (ret_val.val == moveit_msgs::MoveItErrorCodes::TIMED_OUT)
-	{
-		if (plan_kinematics_path_client.call(srv))
-		{
-			mp_res = srv.response.motion_plan_response;
-			if (mp_res.error_code.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
-			{
-				std::cerr << "Planning failed due to ERROR CODE = " << mp_res.error_code.val << std::endl;
-				go_to_pose_feedback_.feedback = "Planning failed";
-				go_to_pose_as_.publishFeedback(go_to_pose_feedback_);
-				ret_val.val = mp_res.error_code.val;
-			}
-			else
-			{
-				std::cout << "Planning successful\n";
-				go_to_pose_feedback_.feedback = "Planning Successful";
-				go_to_pose_as_.publishFeedback(go_to_pose_feedback_);
-				moveit::planning_interface::MoveGroupInterface::Plan plan;
-				plan.trajectory_ = mp_res.trajectory;
-				ret_val = move_group_.execute(plan);
-			}
-		}
-		else
-		{
-			go_to_pose_result_.pose = move_group_.getCurrentPose().pose;
-			ROS_ERROR("Failed to call service plan_kinematics_path");
-			go_to_pose_feedback_.feedback = "Failed to call service plan_kinematics_path";
-			go_to_pose_as_.publishFeedback(go_to_pose_feedback_);
-			go_to_pose_as_.setAborted(go_to_pose_result_);
-			return;
-		}
-	}	
 
 	go_to_pose_result_.pose = move_group_.getCurrentPose().pose;	
 
@@ -416,15 +195,6 @@ void YK_Interface::goToPoseCallback(const yk_msgs::GoToPoseGoalConstPtr &goal)
 
 	async_spinner.stop();
 	// set the action state to succeeded
-
-	if (ret_val.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
-	{
-		std::cerr << "Move failed due to ERROR CODE=" << ret_val;
-		go_to_pose_feedback_.feedback = "Move failed";
-		go_to_pose_as_.publishFeedback(go_to_pose_feedback_);
-		go_to_pose_as_.setAborted(go_to_pose_result_);
-		return;
-	}
 
 	go_to_pose_as_.setSucceeded(go_to_pose_result_);
 
@@ -441,100 +211,24 @@ void YK_Interface::goToPoseAsyncCallback(const yk_msgs::GoToPoseGoalConstPtr &go
 	std::cout << "New Move to: " << goal->pose;
 	// moveit::planning_interface::MoveGroupInterface move_group."manipulator"); //move_group name to be changes
 
-	//******************************************************************
-	/**
-	 * Approach 1: Using plan_kinematics_path service
-	 * ISSUE: Planning errors due to exceeding vel/acc joint limits
-	 */
-	moveit_msgs::MotionPlanRequest mp_req;
-	moveit_msgs::MotionPlanResponse mp_res;
+	bool success = planAndExecutePose_(goal->pose, goal->max_velocity_scaling_factor, goal->max_acceleration_scaling_factor, goal->traj_type, true);
 
-	mp_req.pipeline_id = "pilz_industrial_motion_planner";
-	mp_req.planner_id = goal->traj_type.compare("PTP") == 0 ? "PTP" : "LIN";
-	mp_req.group_name = "manipulator";
-	mp_req.num_planning_attempts = 5;
-	if (goal->max_velocity_scaling_factor == 0.0)
+	if (!success)
 	{
-		mp_req.max_velocity_scaling_factor = 0.3;
-	}
-	else
-	{
-		mp_req.max_velocity_scaling_factor = goal->max_velocity_scaling_factor;
-	}
-	if (goal->max_acceleration_scaling_factor == 0.0)
-	{
-		mp_req.max_acceleration_scaling_factor = 0.3;
-	}
-	else
-	{
-		mp_req.max_acceleration_scaling_factor = goal->max_acceleration_scaling_factor;
+		go_to_pose_feedback_.feedback = "Move failed";
+		go_to_pose_as_.publishFeedback(go_to_pose_feedback_);
+		go_to_pose_as_.setAborted(go_to_pose_result_);
+		return;
 	}
 
-	float pos_tolerance = 0.001;
-	float orient_tolerance = 0.01;
-	geometry_msgs::PoseStamped target_pose_stamped;
-	target_pose_stamped.header.frame_id = goal->base_frame;
-	target_pose_stamped.pose = goal->pose;
-	moveit_msgs::Constraints pose_goal = kinematic_constraints::constructGoalConstraints(move_group_.getEndEffectorLink(), target_pose_stamped, pos_tolerance, orient_tolerance);
-	mp_req.goal_constraints.push_back(pose_goal);
+	go_to_pose_result_.pose = move_group_.getCurrentPose().pose;	
 
-	ros::ServiceClient plan_kinematics_path_client = nh_.serviceClient<moveit_msgs::GetMotionPlan>("plan_kinematic_path");
-	plan_kinematics_path_client.waitForExistence();
-	moveit_msgs::GetMotionPlan srv;
-	srv.request.motion_plan_request = mp_req;
-
-	moveit_msgs::MoveItErrorCodes ret_val;
-	ret_val.val = moveit_msgs::MoveItErrorCodes::TIMED_OUT;
-
-	while (ret_val.val == moveit_msgs::MoveItErrorCodes::TIMED_OUT)
-	{
-		if (plan_kinematics_path_client.call(srv))
-		{
-			mp_res = srv.response.motion_plan_response;
-			if (mp_res.error_code.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
-			{
-				std::cerr << "Planning failed due to ERROR CODE = " << mp_res.error_code.val << std::endl;
-				go_to_pose_async_feedback_.feedback = "Planning failed";
-				go_to_pose_async_as_.publishFeedback(go_to_pose_async_feedback_);
-				ret_val.val = mp_res.error_code.val;
-			}
-			else
-			{
-				std::cout << "Planning successful\n";
-				go_to_pose_async_feedback_.feedback = "Planning Successful";
-				go_to_pose_async_as_.publishFeedback(go_to_pose_async_feedback_);
-				moveit::planning_interface::MoveGroupInterface::Plan plan;
-				plan.trajectory_ = mp_res.trajectory;
-				ret_val = move_group_.asyncExecute(plan);
-			}
-		}
-		else
-		{
-			go_to_pose_async_result_.pose = move_group_.getCurrentPose().pose;
-			ROS_ERROR("Failed to call service plan_kinematics_path");
-			go_to_pose_async_feedback_.feedback = "Failed to call service plan_kinematics_path";
-			go_to_pose_async_as_.publishFeedback(go_to_pose_async_feedback_);
-			go_to_pose_async_as_.setAborted(go_to_pose_async_result_);
-			return;
-		}
-	}	
-
-	go_to_pose_async_result_.pose = move_group_.getCurrentPose().pose;
-	std::cout << go_to_pose_async_result_.pose ;
+	std::cout << go_to_pose_result_.pose;
 
 	async_spinner.stop();
 	// set the action state to succeeded
 
-	if (ret_val.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
-	{
-		std::cerr << "Move failed due to ERROR CODE=" << ret_val;
-		go_to_pose_async_feedback_.feedback = "Move failed";
-		go_to_pose_async_as_.publishFeedback(go_to_pose_async_feedback_);
-		go_to_pose_async_as_.setAborted(go_to_pose_async_result_);
-		return;
-	}
-
-	go_to_pose_async_as_.setSucceeded(go_to_pose_async_result_);
+	go_to_pose_as_.setSucceeded(go_to_pose_result_);
 
 	return;
 }
@@ -611,30 +305,6 @@ void YK_Interface::executeCartesianTrajectoryCallback(const yk_msgs::ExecuteCart
 	execute_cartesian_trajectory_feedback_.wp_id = 0;
 	execute_cartesian_trajectory_as_.publishFeedback(execute_cartesian_trajectory_feedback_);
 	
-	//******************************************************************
-	/*
-	moveit::planning_interface::MoveGroupInterface::Plan plan;
-	// optional arg: avoid_collision: bool
-	// optional arg: planning_options: moveit::planning_interface::MoveGroupInterface::PlanningOptions
-	double fraction = move_group_.computeCartesianPath(goal->waypoints,
-													   goal->eef_step,
-													   goal->jump_threshold,
-													   plan.trajectory_);
-	moveit_msgs::MoveItErrorCodes ret_val;
-
-	if (fraction < 0.99) {
-		std::cerr << "Planning failed due to ???. Fraction of planning successful = " << fraction  * 100.0 << std::endl;
-		execute_cartesian_trajectory_feedback_.feedback = "Planning failed";
-		execute_cartesian_trajectory_as_.publishFeedback(execute_cartesian_trajectory_feedback_);
-		ret_val.val = moveit_msgs::MoveItErrorCodes::PLANNING_FAILED;
-	} else {
-		std::cout << "Planning successful\n";
-		execute_cartesian_trajectory_feedback_.feedback = "Planning Successful";
-		execute_cartesian_trajectory_as_.publishFeedback(execute_cartesian_trajectory_feedback_);
-		ret_val = move_group_.asyncExecute(plan);
-	}
-	*/
-	
 	planAndExecuteCartesianPath_(goal->waypoints, goal->eef_step, goal->jump_threshold, 
 								goal->max_velocity_scaling_factor, goal->max_acceleration_scaling_factor,
 								goal->blend_radius, true);
@@ -690,203 +360,24 @@ bool YK_Interface::executeCartesianTrajectory(yk_msgs::ExecuteCartesianTrajector
 	std::cout << "Let's Move!!\n";
 	std::cout << "Number of waypoints: " << req.poses.size() << std::endl;
 
-	// Approach 1: Use computeCartesianPath
-	// Issue: Robot doesn't follow the trajectory, and instead moves in a straight line to the last waypoint.
-	/*
-	moveit::planning_interface::MoveGroupInterface::Plan plan;
-	// optional arg: avoid_collision: bool
-	// optional arg: planning_options: moveit::planning_interface::MoveGroupInterface::PlanningOptions
-	double fraction = move_group_.computeCartesianPath(req.poses,
-													   req.eef_step,
-													   req.jump_threshold,
-													   plan.trajectory_);
-													   
-	bool success = (move_group_.plan(plan) == moveit::core::MoveItErrorCode::SUCCESS);
-	moveit_msgs::MoveItErrorCodes ret_val;
-
-	if (success) {
-		std::cerr << "Planning failed due to ???. Fraction of planning successful = " << fraction  * 100.0 << std::endl;
-		ret_val.val = moveit_msgs::MoveItErrorCodes::PLANNING_FAILED;
-	} else {
-		std::cout << "Planning successful\n";
-		ret_val = move_group_.execute(plan);
-	}
-	*/
-
-	// Approach 2: Use plan_sequence_path service
-	// Issue: Robot doesn't follow the trajectory, and instead moves in a straight line to the last waypoint.
-	
-	moveit_msgs::MotionPlanRequest mp_req_base;
-	moveit_msgs::MotionSequenceRequest ms_req;
-	moveit_msgs::MotionSequenceResponse ms_res;
-
-	mp_req_base.pipeline_id = "pilz_industrial_motion_planner";
-	mp_req_base.planner_id = "LIN";
-	mp_req_base.group_name = "manipulator";
-	mp_req_base.num_planning_attempts = 5;
-	mp_req_base.max_velocity_scaling_factor = req.max_velocity_scaling_factor == 0.0 ? 0.3 : req.max_velocity_scaling_factor;
-	mp_req_base.max_acceleration_scaling_factor = req.max_acceleration_scaling_factor == 0.0 ? 0.3 : req.max_acceleration_scaling_factor;
-
-	float pos_tolerance = 0.001;
-	float orient_tolerance = 0.01;
-	float blend_radius = req.blend_radius;
-
-	moveit::core::RobotStatePtr robot_state_ptr(move_group_.getCurrentState());
-	const robot_state::JointModelGroup *robot_joint_group_ptr = robot_state_ptr->getJointModelGroup("manipulator");
-	std::vector<geometry_msgs::Pose> waypoints = req.poses;
-
-	for (int i = 0; i < waypoints.size(); i++)
-	{
-		moveit_msgs::MotionSequenceItem item;
-		item.blend_radius = blend_radius;
-   
-		if (i == waypoints.size() - 1)
-			 item.blend_radius = 0.0;
-
-		item.req = mp_req_base;
-		geometry_msgs::PoseStamped waypoint_pose;
-		waypoint_pose.header.frame_id = "base_link";
-		waypoint_pose.pose = waypoints[i];
-		moveit_msgs::Constraints goal = kinematic_constraints::constructGoalConstraints(move_group_.getEndEffectorLink(), waypoint_pose, pos_tolerance, orient_tolerance);
-		item.req.goal_constraints.push_back(goal);
-   
-		if (i != waypoints.size() - 1)
-			 item.req.start_state = moveit_msgs::RobotState();
-   
-		ms_req.items.push_back(item);
-	}
-
-	std::cout<<"Number of waypoints: "<<ms_req.items.size()<<std::endl;
-	ros::ServiceClient plan_sequence_path_client = nh_.serviceClient<moveit_msgs::GetMotionSequence>("plan_sequence_path");
-	plan_sequence_path_client.waitForExistence();
-	moveit_msgs::GetMotionSequence srv;
-	srv.request.request = ms_req;
-
 	moveit_msgs::MoveItErrorCodes ret_val;
 	ret_val.val = moveit_msgs::MoveItErrorCodes::TIMED_OUT;
 	
-	while (ret_val.val == moveit_msgs::MoveItErrorCodes::TIMED_OUT)
-	{
-		if (plan_sequence_path_client.call(srv))
-		{
-			ms_res = srv.response.response;
-			if (ms_res.error_code.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
-			{
-				std::cerr << "Planning failed due to ERROR CODE = " << ms_res.error_code.val << std::endl;
-				ret_val.val = ms_res.error_code.val;
-			}
-			else
-			{
-				std::cout << "Planning successful\n";
-				std::vector<moveit_msgs::RobotTrajectory> trajectories = ms_res.planned_trajectories;
-				std::cout<<"Number of planned trajectories: "<<trajectories.size()<<std::endl;
-				for (int i = 0; i < trajectories.size(); i++)
-				{
-					moveit::planning_interface::MoveGroupInterface::Plan plan;
-					plan.trajectory_ = trajectories[i];
-					ret_val = move_group_.execute(plan);
-					if (ret_val.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
-					{
-						std::cerr << "Move failed due to ERROR CODE=" << ret_val;
-						return false;
-					}
-				}
-			}
-		}
-		else
-		{
-			ROS_ERROR("Failed to call service plan_sequence_path");
-			return false;
-		}
-	}		
+	bool success = planAndExecuteCartesianPath_(req.poses, req.eef_step, req.jump_threshold, 
+												req.max_velocity_scaling_factor, req.max_acceleration_scaling_factor,
+												req.blend_radius, false);
 	
-
-	// Approach 3: Using plan_kinematics_path service sequentially
-	// Issue: Start position of next trajectory is not always the end position of the previous trajectory.
-	/*
-	std::vector<moveit_msgs::RobotTrajectory> trajectories;
-	std::vector<geometry_msgs::Pose> waypoints = req.poses;
-	moveit::core::RobotStatePtr robot_state_ptr(move_group_.getCurrentState());
-	const robot_state::JointModelGroup *robot_joint_group_ptr = robot_state_ptr->getJointModelGroup("manipulator");
-
-	ros::ServiceClient plan_kinematics_path_client = nh_.serviceClient<moveit_msgs::GetMotionPlan>("plan_kinematic_path");
-	plan_kinematics_path_client.waitForExistence();
-	moveit_msgs::GetMotionPlan srv;
-	
-	moveit_msgs::MoveItErrorCodes ret_val;
-
-	for( int i = 0; i < waypoints.size(); i++)
-	{
-		moveit_msgs::MotionPlanRequest mp_req;
-		moveit_msgs::MotionPlanResponse mp_res;
-
-		mp_req.pipeline_id = "pilz_industrial_motion_planner";
-		mp_req.planner_id = "LIN";
-		mp_req.group_name = "manipulator";
-
-		robot_state_ptr->setFromIK(robot_joint_group_ptr, waypoints[i-1]);
-		robot_state_ptr->update();
-		mp_req.start_state.joint_state.name = robot_state_ptr->getVariableNames();
-		double* positions = robot_state_ptr->getVariablePositions();
-		mp_req.start_state.joint_state.position.assign(positions, positions + robot_state_ptr->getVariableCount());
-		// moveit::core::robotStateToRobotStateMsg(*robot_state_ptr, mp_req.start_state);
-
-		mp_req.num_planning_attempts = 5;
-		mp_req.max_velocity_scaling_factor = req.max_velocity_scaling_factor == 0.0 ? 0.3 : req.max_velocity_scaling_factor;
-		mp_req.max_acceleration_scaling_factor = req.max_acceleration_scaling_factor == 0.0 ? 0.3 : req.max_acceleration_scaling_factor;
-
-		float pos_tolerance = 0.001;
-		float orient_tolerance = 0.01;
-		geometry_msgs::PoseStamped target_pose_stamped;
-		target_pose_stamped.header.frame_id = "base_link";
-		target_pose_stamped.pose = waypoints[i];
-		moveit_msgs::Constraints pose_goal = kinematic_constraints::constructGoalConstraints(move_group_.getEndEffectorLink(), target_pose_stamped, pos_tolerance, orient_tolerance);
-		mp_req.goal_constraints.push_back(pose_goal);
-
-		srv.request.motion_plan_request = mp_req;
-		plan_kinematics_path_client.call(srv);
-		mp_res = srv.response.motion_plan_response;
-
-		if (mp_res.error_code.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
-		{
-			ret_val.val = mp_res.error_code.val;
-			std::cerr << "Planning failed due to ERROR CODE = " << mp_res.error_code.val << std::endl;
-			return false;
-		}
-		else
-		{
-			std::cout << "Planning successful\n";
-			moveit::planning_interface::MoveGroupInterface::Plan plan;
-			plan.trajectory_ = mp_res.trajectory;
-			trajectories.push_back(mp_res.trajectory);
-		}
-	}
-
-	for (int i=0; i<trajectories.size(); i++)
-	{
-		moveit::planning_interface::MoveGroupInterface::Plan plan;
-		plan.trajectory_ = trajectories[i];
-		ret_val = move_group_.execute(plan);
-		std::cout<<"Trajectory "<<i<<" executed\n";		// std::cout<<"Current Pose: \n"<<move_group_.getCurrentPose().pose.position<<std::endl;
-		if (ret_val.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
-		{
-			std::cerr << "Move failed due to ERROR CODE=" << ret_val;
-			return false;
-		}
-	}
-	*/
-
 	res.pose = move_group_.getCurrentPose().pose;
 	std::cout << res.pose;
 
 	async_spinner.stop();
 
-	return true;	
+	return success;	
 
 }
 
 bool YK_Interface::executeCartesianTrajectoryAsync(yk_msgs::ExecuteCartesianTrajectory::Request &req, 
-											  yk_msgs::ExecuteCartesianTrajectory::Response &res)
+												   yk_msgs::ExecuteCartesianTrajectory::Response &res)
 {
 
 	ros::AsyncSpinner async_spinner(1);
@@ -895,202 +386,16 @@ bool YK_Interface::executeCartesianTrajectoryAsync(yk_msgs::ExecuteCartesianTraj
 	std::cout << "Let's Move!!\n";
 	std::cout << "Number of waypoints: " << req.poses.size() << std::endl;
 
-	// Approach 1: Use computeCartesianPath
-	// Issue: Robot doesn't follow the trajectory, and instead moves in a straight line to the last waypoint.
-	/*
-	moveit::planning_interface::MoveGroupInterface::Plan plan;
-	// optional arg: avoid_collision: bool
-	// optional arg: planning_options: moveit::planning_interface::MoveGroupInterface::PlanningOptions
-	double fraction = move_group_.computeCartesianPath(req.poses,
-													   req.eef_step,
-													   req.jump_threshold,
-													   plan.trajectory_);
-													   
-	bool success = (move_group_.plan(plan) == moveit::core::MoveItErrorCode::SUCCESS);
-	moveit_msgs::MoveItErrorCodes ret_val;
-
-	if (success) {
-		std::cerr << "Planning failed due to ???. Fraction of planning successful = " << fraction  * 100.0 << std::endl;
-		ret_val.val = moveit_msgs::MoveItErrorCodes::PLANNING_FAILED;
-	} else {
-		std::cout << "Planning successful\n";
-		ret_val = move_group_.execute(plan);
-	}
-	*/
-
-	// Approach 2: Use plan_sequence_path service
-	// Issue: Robot doesn't follow the trajectory, and instead moves in a straight line to the last waypoint.
+	bool success = planAndExecuteCartesianPath_(req.poses, req.eef_step, req.jump_threshold, 
+												req.max_velocity_scaling_factor, req.max_acceleration_scaling_factor,
+												req.blend_radius, true);	
 	
-	moveit_msgs::MotionPlanRequest mp_req_base;
-	moveit_msgs::MotionSequenceRequest ms_req;
-	moveit_msgs::MotionSequenceResponse ms_res;
-
-	mp_req_base.pipeline_id = "pilz_industrial_motion_planner";
-	mp_req_base.planner_id = "LIN";
-	mp_req_base.group_name = "manipulator";
-	mp_req_base.num_planning_attempts = 5;
-	mp_req_base.max_velocity_scaling_factor = req.max_velocity_scaling_factor == 0.0 ? 0.3 : req.max_velocity_scaling_factor;
-	mp_req_base.max_acceleration_scaling_factor = req.max_acceleration_scaling_factor == 0.0 ? 0.3 : req.max_acceleration_scaling_factor;
-
-	float pos_tolerance = 0.001;
-	float orient_tolerance = 0.01;
-	float blend_radius = req.blend_radius;
-
-	moveit::core::RobotStatePtr robot_state_ptr(move_group_.getCurrentState());
-	const robot_state::JointModelGroup *robot_joint_group_ptr = robot_state_ptr->getJointModelGroup("manipulator");
-	std::vector<geometry_msgs::Pose> waypoints = req.poses;
-
-	for (int i = 0; i < waypoints.size(); i++)
-	{
-		moveit_msgs::MotionSequenceItem item;
-		item.blend_radius = blend_radius;
-   
-		if (i == waypoints.size() - 1)
-			 item.blend_radius = 0.0;
-
-		item.req = mp_req_base;
-		geometry_msgs::PoseStamped waypoint_pose;
-		waypoint_pose.header.frame_id = "base_link";
-		waypoint_pose.pose = waypoints[i];
-		moveit_msgs::Constraints goal = kinematic_constraints::constructGoalConstraints(move_group_.getEndEffectorLink(), waypoint_pose, pos_tolerance, orient_tolerance);
-		item.req.goal_constraints.push_back(goal);
-   
-		if (i != waypoints.size() - 1)
-			 item.req.start_state = moveit_msgs::RobotState();
-   
-		ms_req.items.push_back(item);
-	}
-
-	std::cout<<"Number of waypoints: "<<ms_req.items.size()<<std::endl;
-	ros::ServiceClient plan_sequence_path_client = nh_.serviceClient<moveit_msgs::GetMotionSequence>("plan_sequence_path");
-	plan_sequence_path_client.waitForExistence();
-	moveit_msgs::GetMotionSequence srv;
-	srv.request.request = ms_req;
-
-	moveit_msgs::MoveItErrorCodes ret_val;
-	ret_val.val = moveit_msgs::MoveItErrorCodes::TIMED_OUT;
-	
-	while (ret_val.val == moveit_msgs::MoveItErrorCodes::TIMED_OUT)
-	{
-		if (plan_sequence_path_client.call(srv))
-		{
-			ms_res = srv.response.response;
-			if (ms_res.error_code.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
-			{
-				std::cerr << "Planning failed due to ERROR CODE = " << ms_res.error_code.val << std::endl;
-				ret_val.val = ms_res.error_code.val;
-			}
-			else
-			{
-				std::cout << "Planning successful\n";
-				std::vector<moveit_msgs::RobotTrajectory> trajectories = ms_res.planned_trajectories;
-				std::cout<<"Number of planned trajectories: "<<trajectories.size()<<std::endl;
-				if (trajectories.size() == 1)
-				{
-					moveit::planning_interface::MoveGroupInterface::Plan plan;
-					plan.trajectory_ = trajectories[0];
-					ret_val = move_group_.asyncExecute(plan);
-					if (ret_val.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
-					{
-						std::cerr << "Move failed due to ERROR CODE=" << ret_val;
-						return false;
-					}
-				}
-				else {
-					ROS_ERROR_STREAM("Trajectory execution not supported for multiple trajectories. Use yk_execute_cartesian_trajectory service");
-					return false;
-				}
-			}
-		}
-		else
-		{
-			ROS_ERROR("Failed to call service plan_sequence_path");
-			return false;
-		}
-	}		
-	
-
-	// Approach 3: Using plan_kinematics_path service sequentially
-	// Issue: Start position of next trajectory is not always the end position of the previous trajectory.
-	/*
-	std::vector<moveit_msgs::RobotTrajectory> trajectories;
-	std::vector<geometry_msgs::Pose> waypoints = req.poses;
-	moveit::core::RobotStatePtr robot_state_ptr(move_group_.getCurrentState());
-	const robot_state::JointModelGroup *robot_joint_group_ptr = robot_state_ptr->getJointModelGroup("manipulator");
-
-	ros::ServiceClient plan_kinematics_path_client = nh_.serviceClient<moveit_msgs::GetMotionPlan>("plan_kinematic_path");
-	plan_kinematics_path_client.waitForExistence();
-	moveit_msgs::GetMotionPlan srv;
-	
-	moveit_msgs::MoveItErrorCodes ret_val;
-
-	for( int i = 0; i < waypoints.size(); i++)
-	{
-		moveit_msgs::MotionPlanRequest mp_req;
-		moveit_msgs::MotionPlanResponse mp_res;
-
-		mp_req.pipeline_id = "pilz_industrial_motion_planner";
-		mp_req.planner_id = "LIN";
-		mp_req.group_name = "manipulator";
-
-		robot_state_ptr->setFromIK(robot_joint_group_ptr, waypoints[i-1]);
-		robot_state_ptr->update();
-		mp_req.start_state.joint_state.name = robot_state_ptr->getVariableNames();
-		double* positions = robot_state_ptr->getVariablePositions();
-		mp_req.start_state.joint_state.position.assign(positions, positions + robot_state_ptr->getVariableCount());
-		// moveit::core::robotStateToRobotStateMsg(*robot_state_ptr, mp_req.start_state);
-
-		mp_req.num_planning_attempts = 5;
-		mp_req.max_velocity_scaling_factor = req.max_velocity_scaling_factor == 0.0 ? 0.3 : req.max_velocity_scaling_factor;
-		mp_req.max_acceleration_scaling_factor = req.max_acceleration_scaling_factor == 0.0 ? 0.3 : req.max_acceleration_scaling_factor;
-
-		float pos_tolerance = 0.001;
-		float orient_tolerance = 0.01;
-		geometry_msgs::PoseStamped target_pose_stamped;
-		target_pose_stamped.header.frame_id = "base_link";
-		target_pose_stamped.pose = waypoints[i];
-		moveit_msgs::Constraints pose_goal = kinematic_constraints::constructGoalConstraints(move_group_.getEndEffectorLink(), target_pose_stamped, pos_tolerance, orient_tolerance);
-		mp_req.goal_constraints.push_back(pose_goal);
-
-		srv.request.motion_plan_request = mp_req;
-		plan_kinematics_path_client.call(srv);
-		mp_res = srv.response.motion_plan_response;
-
-		if (mp_res.error_code.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
-		{
-			ret_val.val = mp_res.error_code.val;
-			std::cerr << "Planning failed due to ERROR CODE = " << mp_res.error_code.val << std::endl;
-			return false;
-		}
-		else
-		{
-			std::cout << "Planning successful\n";
-			moveit::planning_interface::MoveGroupInterface::Plan plan;
-			plan.trajectory_ = mp_res.trajectory;
-			trajectories.push_back(mp_res.trajectory);
-		}
-	}
-
-	for (int i=0; i<trajectories.size(); i++)
-	{
-		moveit::planning_interface::MoveGroupInterface::Plan plan;
-		plan.trajectory_ = trajectories[i];
-		ret_val = move_group_.execute(plan);
-		std::cout<<"Trajectory "<<i<<" executed\n";		// std::cout<<"Current Pose: \n"<<move_group_.getCurrentPose().pose.position<<std::endl;
-		if (ret_val.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
-		{
-			std::cerr << "Move failed due to ERROR CODE=" << ret_val;
-			return false;
-		}
-	}
-	*/
-
 	res.pose = move_group_.getCurrentPose().pose;
 	std::cout << res.pose;
 
 	async_spinner.stop();
 
-	return true;	
+	return success;	
 
 }
 
@@ -1117,66 +422,7 @@ bool YK_Interface::setPoseFT(yk_msgs::SetPoseFT::Request &req,
 	move_group_.stop();
 	ros::Duration(1.0).sleep();
 
-	// 1. PLAN TRAJECTORY
-	//******************************************************************
-	moveit_msgs::MotionPlanRequest mp_req;
-	moveit_msgs::MotionPlanResponse mp_res;
-
-	mp_req.pipeline_id = "pilz_industrial_motion_planner";
-	mp_req.planner_id = "LIN";
-	mp_req.group_name = "manipulator";
-	mp_req.num_planning_attempts = 5;
-	if (req.max_velocity_scaling_factor == 0.0)
-	{
-		mp_req.max_velocity_scaling_factor = 0.3;
-	}
-	else
-	{
-		mp_req.max_velocity_scaling_factor = req.max_velocity_scaling_factor;
-	}
-	if (req.max_acceleration_scaling_factor == 0.0)
-	{
-		mp_req.max_acceleration_scaling_factor = 0.3;
-	}
-	else
-	{
-		mp_req.max_acceleration_scaling_factor = req.max_acceleration_scaling_factor;
-	}
-
-	float pos_tolerance = 0.001;
-	float orient_tolerance = 0.01;
-	geometry_msgs::PoseStamped target_pose_stamped;
-	target_pose_stamped.header.frame_id = req.base_frame;
-	target_pose_stamped.pose = req.pose;
-	moveit_msgs::Constraints pose_goal = kinematic_constraints::constructGoalConstraints(move_group_.getEndEffectorLink(), target_pose_stamped, pos_tolerance, orient_tolerance);
-	mp_req.goal_constraints.push_back(pose_goal);
-
-	ros::ServiceClient plan_kinematics_path_client = nh_.serviceClient<moveit_msgs::GetMotionPlan>("plan_kinematic_path");
-	plan_kinematics_path_client.waitForExistence();
-	moveit_msgs::GetMotionPlan srv;
-	srv.request.motion_plan_request = mp_req;
-	moveit::planning_interface::MoveGroupInterface::Plan plan;
-
-	if (plan_kinematics_path_client.call(srv))
-	{
-		mp_res = srv.response.motion_plan_response;
-		if (mp_res.error_code.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
-		{
-			std::cerr << "Planning failed due to ERROR CODE = " << mp_res.error_code.val << std::endl;
-		}
-		else
-		{
-			std::cout << "Planning successful\n";
-			plan.trajectory_ = mp_res.trajectory;
-		}
-	}
-	else
-	{
-		ROS_ERROR("Failed to call service plan_kinematics_path");
-		return false;
-	}
-
-	// 2. FORCE TORQUE THRESHOLDS
+	// 1. FORCE TORQUE THRESHOLDS
 	//******************************************************************
 	for (int i=0; i<3; i++)
 	{
@@ -1189,9 +435,9 @@ bool YK_Interface::setPoseFT(yk_msgs::SetPoseFT::Request &req,
 	double start_force[3] = {eef_force_[0], eef_force_[1], eef_force_[2]};
 	double start_torque[3] = {eef_torque_[0], eef_torque_[1], eef_torque_[2]};
 
-	// 3. EXECUTE TRAJECTORY
+	// 2. PLAN AND EXECUTE TRAJECTORY ASYNCHRONOUSLY
 	//******************************************************************
-	move_group_.asyncExecute(plan);
+	bool success = planAndExecutePose_(req.pose, req.max_velocity_scaling_factor, req.max_acceleration_scaling_factor, "LIN", true);
 
 	ROS_INFO_STREAM("MOVEMENT STARTED");
 
@@ -1311,7 +557,7 @@ bool YK_Interface::planAndExecuteCartesianPath_(
 	const std::vector<geometry_msgs::Pose> &waypoints, 
 	double eef_step, double jump_threshold, 
 	double max_velocity_scaling_factor, double max_acceleration_scaling_factor,
-	double blend_radius, bool async)
+	double blend_radius, bool async, std::string planner_id)
 {
 
 	// Approach 1: Use computeCartesianPath
@@ -1345,7 +591,7 @@ bool YK_Interface::planAndExecuteCartesianPath_(
 	moveit_msgs::MotionSequenceResponse ms_res;
 
 	mp_req_base.pipeline_id = "pilz_industrial_motion_planner";
-	mp_req_base.planner_id = "LIN";
+	mp_req_base.planner_id = planner_id;
 	mp_req_base.group_name = "manipulator";
 	mp_req_base.num_planning_attempts = 5;
 	mp_req_base.max_velocity_scaling_factor = max_velocity_scaling_factor == 0.0 ? 0.3 : max_velocity_scaling_factor;
@@ -1708,4 +954,157 @@ void YK_Interface::checkTrajStatus(const actionlib_msgs::GoalStatusArray::ConstP
 	int len = msg->status_list.size();
 	if (len != 0)
 		traj_status_ = msg->status_list[len - 1];
+}
+
+bool YK_Interface::planAndExecutePose_(const geometry_msgs::Pose &pose, 
+									   double max_velocity_scaling_factor, double max_acceleration_scaling_factor,
+									   std::string planner_id,
+									   bool async)
+{
+	//******************************************************************
+	/**
+	 * Approach 1: Using plan_kinematics_path service
+	 * ISSUE: Planning errors due to exceeding vel/acc joint limits
+	 */
+	moveit_msgs::MotionPlanRequest mp_req;
+	moveit_msgs::MotionPlanResponse mp_res;
+
+	mp_req.pipeline_id = "pilz_industrial_motion_planner";
+	mp_req.planner_id = planner_id.compare("PTP") == 0 ? "PTP" : "LIN";
+	mp_req.group_name = "manipulator";
+	mp_req.num_planning_attempts = 5;
+	mp_req.max_velocity_scaling_factor = max_velocity_scaling_factor == 0.0 ? 0.3 : max_velocity_scaling_factor;
+	mp_req.max_acceleration_scaling_factor = max_acceleration_scaling_factor == 0.0 ? 0.3 : max_acceleration_scaling_factor;
+
+	float pos_tolerance = 0.001;
+	float orient_tolerance = 0.01;
+	geometry_msgs::PoseStamped target_pose_stamped;
+	target_pose_stamped.header.frame_id = "";
+	target_pose_stamped.pose = pose;
+	moveit_msgs::Constraints pose_goal = kinematic_constraints::constructGoalConstraints(move_group_.getEndEffectorLink(), target_pose_stamped, pos_tolerance, orient_tolerance);
+	mp_req.goal_constraints.push_back(pose_goal);
+
+	ros::ServiceClient plan_kinematics_path_client = nh_.serviceClient<moveit_msgs::GetMotionPlan>("plan_kinematic_path");
+	plan_kinematics_path_client.waitForExistence();
+	moveit_msgs::GetMotionPlan srv;
+	srv.request.motion_plan_request = mp_req;
+
+	moveit_msgs::MoveItErrorCodes ret_val;
+	ret_val.val = moveit_msgs::MoveItErrorCodes::TIMED_OUT;
+
+	while (ret_val.val == moveit_msgs::MoveItErrorCodes::TIMED_OUT)
+	{
+		if (plan_kinematics_path_client.call(srv))
+		{
+			mp_res = srv.response.motion_plan_response;
+			if (mp_res.error_code.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
+			{
+				std::cerr << "Planning failed due to ERROR CODE = " << mp_res.error_code.val << std::endl;
+				ret_val.val = mp_res.error_code.val;
+			}
+			else
+			{
+				std::cout << "Planning successful\n";
+				moveit::planning_interface::MoveGroupInterface::Plan plan;
+				plan.trajectory_ = mp_res.trajectory;
+				if (async)
+					ret_val = move_group_.asyncExecute(plan);
+				else
+					ret_val = move_group_.execute(plan);
+			}
+		}
+		else
+		{
+			ROS_ERROR("Failed to call service plan_kinematics_path");
+			return false;
+		}
+	}	
+
+	/**
+	 * Approach 2: using setPlannerId to use PILZ LIN planner
+	 * ERROR: "Cannot find planning configuration for group 'manipulator' using planner 'LIN'. Will use defaults instead."
+	 * ISSUE:  ompl_planning.yaml file needs to have "LIN" planner config. PILZ is not part of OMPL.
+	/*
+	move_group_.setPoseTarget(req.pose);
+	move_group_.setPoseReferenceFrame(req.base_frame);
+	move_group_.setPlannerId("LIN");
+	moveit_msgs::MoveItErrorCodes ret_val;
+	ret_val.val = moveit_msgs::MoveItErrorCodes::TIMED_OUT;
+
+	while (ret_val.val == moveit_msgs::MoveItErrorCodes::TIMED_OUT)
+	{
+		move_group_.setStartStateToCurrentState();
+		ret_val = move_group_.move();
+	}
+	*/
+
+	// Approach 3: using computeCartesianPath
+	/**
+	 * ERROR: Aborts with TIMEOUT. "Validation failed: Missing valid timestamp data for trajectory pt 1"
+	 *
+	moveit_msgs::MoveItErrorCodes ret_val;
+	ret_val.val = moveit_msgs::MoveItErrorCodes::TIMED_OUT;
+
+	while(ret_val.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
+	{
+		geometry_msgs::Pose start_pose = move_group_.getCurrentPose().pose;
+		geometry_msgs::Pose target_pose = req.pose;
+		std::vector<geometry_msgs::Pose> waypoints;
+		waypoints.push_back(start_pose);
+		waypoints.push_back(target_pose);
+
+		moveit_msgs::RobotTrajectory trajectory;
+		double fraction = move_group_.computeCartesianPath(waypoints, 0.01, 0.0, trajectory);
+
+		if (fraction > 0.95)
+		{
+			moveit::planning_interface::MoveGroupInterface::Plan plan;
+			plan.trajectory_ = trajectory;
+			ret_val = move_group_.execute(plan);
+		}
+		else
+		{
+			ROS_ERROR("Failed to compute cartesian path");
+			return false;
+		}
+	}
+	*/
+	/**
+	 * Approach 4
+	 * ISSUE: Joint space trajectory. Does weird trajectory sometimes.
+	 *
+	move_group_.setPlannerId("BiTRRT");
+	std::cout<<"\nPrinting Planner Params\n";
+	std::map<std::string,std::string> planner_params = move_group_.getPlannerParams("BiTRRT");
+	for (const auto& pair : planner_params) {
+        std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
+    }
+	move_group_.setPoseReferenceFrame(req.base_frame);
+	std::cout<<"Planning Frame.." << move_group_.getPlanningFrame();
+
+	move_group_.setPoseTarget(req.pose);
+	std::cout<<"TargetPose set";
+
+	moveit_msgs::MoveItErrorCodes ret_val = move_group_.move();
+	// return value is of type MoveitErrorCodes message
+
+	std::cout<<"Return Value"<<ret_val;
+
+	while (ret_val.val == moveit_msgs::MoveItErrorCodes::TIMED_OUT)
+	{
+		ret_val = move_group_.move();
+
+	}
+	*/
+	//******************************************************************
+
+
+	if (ret_val.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
+	{
+		std::cerr << "Move failed due to ERROR CODE=" << ret_val;
+		return false;
+	}
+
+	return true;
+
 }
