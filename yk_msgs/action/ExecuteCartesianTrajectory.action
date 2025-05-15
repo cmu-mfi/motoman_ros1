@@ -1,13 +1,14 @@
 #request
-geometry_msgs/Pose[] trajectory # Goal trajecotry of the EE pose
+geometry_msgs/Pose[] waypoints # trajectory waypoints of the EE pose
 float64 eef_step # EE step size for waypoint interpolation
 float64 jump_threshold # Max jump for joint positions, used to prevent rapid IK unwinding
 float64 max_velocity_scaling_factor
 float64 max_acceleration_scaling_factor
+float64 blend_radius # optional (default = 0.0)
 ---
 #response
 geometry_msgs/Pose pose
 ---
 string feedback
 float64 wp_pct # percentage of waypoint completed
-uint wp_id # Current if of the waypoint being executed
+uint8 wp_id # Current if of the waypoint being executed
