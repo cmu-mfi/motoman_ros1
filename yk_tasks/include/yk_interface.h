@@ -7,6 +7,7 @@
 #include <yk_msgs/GoToPoseAction.h>
 #include <yk_msgs/GoToJointsAction.h>
 #include <yk_msgs/ExecuteCartesianTrajectoryAction.h>
+#include <yk_msgs/ExecuteCartesianTrajectoryFTAction.h>
 #include <yk_msgs/GetPose.h>
 #include <yk_msgs/GetPoseStamped.h>
 #include <yk_msgs/SetPose.h>
@@ -33,7 +34,10 @@
 #include <industrial_msgs/RobotStatus.h>
 #include <std_srvs/Trigger.h>
 #include <string.h>
-
+#include <cmath>
+#include <Eigen/Geometry>
+#include <actionlib_msgs/GoalStatusArray.h>
+#include <actionlib_msgs/GoalStatus.h>
 
 class YK_Interface
 {
@@ -47,12 +51,14 @@ private:
 	ros::ServiceServer stopTrajectory_server_;
 	ros::ServiceServer executeCartesianTraj_server_;
 	ros::ServiceServer executeCartesianTrajAsync_server_;
+	ros::ServiceServer setPoseFT_server_;
 
 	//ROS ACTION SERVERS
 	actionlib::SimpleActionServer<yk_msgs::GoToPoseAction> go_to_pose_as_;
 	actionlib::SimpleActionServer<yk_msgs::GoToPoseAction> go_to_pose_async_as_;
 	actionlib::SimpleActionServer<yk_msgs::GoToJointsAction> go_to_joints_as_;
 	actionlib::SimpleActionServer<yk_msgs::ExecuteCartesianTrajectoryAction> execute_cartesian_trajectory_as_;
+	actionlib::SimpleActionServer<yk_msgs::ExecuteCartesianTrajectoryFTAction> execute_cartesian_trajectory_ft_as_;
 
 	//ROS ACTION MSGS FEEDBACKS/RESULTS
 	yk_msgs::GoToPoseFeedback go_to_pose_feedback_;
@@ -63,15 +69,17 @@ private:
 	yk_msgs::GoToJointsResult go_to_joints_result_;
 	yk_msgs::ExecuteCartesianTrajectoryFeedback execute_cartesian_trajectory_feedback_;
 	yk_msgs::ExecuteCartesianTrajectoryResult execute_cartesian_trajectory_result_;
+	yk_msgs::ExecuteCartesianTrajectoryFTFeedback execute_cartesian_trajectory_ft_feedback_;
+	yk_msgs::ExecuteCartesianTrajectoryFTResult execute_cartesian_trajectory_ft_result_;
 
 	//ROS MSGS
-	geometry_msgs::PoseStamped last_pose_;
 	sensor_msgs::JointState last_joints_;
 
 	//ROS TOPIC SUBSCRIBERS
 	ros::Subscriber fts_sub_;
 	ros::Subscriber joint_state_sub_;
 	ros::Subscriber robot_status_sub_;
+	ros::Subscriber trajectory_status_sub_;
 
 	//ROS DATA MEMBERS
 	tf::TransformListener listener_;
@@ -85,6 +93,14 @@ private:
 	double eef_torque_[3]={-100.0, -100.0, -100.0};
 	bool executing_trajectory_=false;
 	bool is_moving_=false;
+	actionlib_msgs::GoalStatus traj_status_;
+
+	//PRIVATE METHODS
+	void calculatePoseError_(const geometry_msgs::Pose &pose1, const geometry_msgs::Pose &pose2, double &position_error, double &orientation_error);
+	bool planAndExecuteCartesianPath_(const std::vector<geometry_msgs::Pose> &waypoints, 
+									double eef_step, double jump_threshold, 
+									double max_velocity_scaling_factor, double max_acceleration_scaling_factor,
+									double blend_radius, bool async);
 
 	// WHO ADDED THIS?
 	moveit_msgs::PositionConstraint createPositionConstraint_(const geometry_msgs::PoseStamped &target_pose, const std::string &link_name, const double tolerance);
@@ -132,7 +148,13 @@ public:
 
 	bool setPoseFT(yk_msgs::SetPoseFT::Request &req, yk_msgs::SetPoseFT::Response &res);
 	
-	void checkMoving(const industrial_msgs::RobotStatus::ConstPtr &msg);
+	// void checkMoving(const industrial_msgs::RobotStatus::ConstPtr &msg);
+	void checkMoving(const sensor_msgs::JointState::ConstPtr &msg);
+
+	void executeCartesianTrajectoryFTCallback(const yk_msgs::ExecuteCartesianTrajectoryFTGoalConstPtr &goal);	
+
+	void checkTrajStatus(const actionlib_msgs::GoalStatusArray::ConstPtr &msg);
+
 };
 
 #endif

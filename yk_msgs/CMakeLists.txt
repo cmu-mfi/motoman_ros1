@@ -18,6 +18,7 @@ add_action_files(
   DIRECTORY action
   FILES 
   ExecuteCartesianTrajectory.action
+  ExecuteCartesianTrajectoryFT.action
   GoToJoints.action
   GoToPose.action
 )

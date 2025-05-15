@@ -1,0 +1,24 @@
+#request
+geometry_msgs/Pose[] waypoints # Goal trajecotry of the EE pose
+float64 eef_step # EE step size for waypoint interpolation
+float64 jump_threshold # Max jump for joint positions, used to prevent rapid IK unwinding
+float64 max_velocity_scaling_factor
+float64 max_acceleration_scaling_factor
+float64 blend_radius # optional (default = 0.0)
+float64[3] force_target
+float64[3] torque_target
+float64 force_tolerance # default 2N
+float64 position_tolerance # default 0.002m
+float64 orient_tolerance # default 0.01rad
+float64 force_adj_speed_factor # default 0.005
+---
+#response
+geometry_msgs/Pose pose
+---
+string feedback
+float64 wp_pct # percentage of waypoint completed
+uint8 wp_id # Current if of the waypoint being executed
+float64 force_error
+float64 torque_error
+float64 position_error
+float64 orientation_error
