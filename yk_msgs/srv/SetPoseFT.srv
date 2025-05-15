@@ -11,5 +11,6 @@ float64[3] torque_thresholds
 
 #response
 geometry_msgs/Pose pose
+bool is_force_termination
 float64[3] force
 float64[3] torque
