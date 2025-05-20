@@ -9,7 +9,7 @@ services:
     tty: true
     network_mode: "host"
     environment:
-      - "ROS_MASTER_URI=http://192.168.1.2:11311"
+      - "ROS_MASTER_URI=http://localhost:11311"
       - "DISPLAY"
     volumes:
       - "/tmp/.X11-unix:/tmp/.X11-unix"
